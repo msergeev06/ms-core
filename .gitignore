@@ -1,4 +1,5 @@
 /upload/*
+!/upload/upload.php
 /packages/*
 !/packages/packages.php
 

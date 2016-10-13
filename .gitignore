@@ -1,3 +1,7 @@
+/upload/*
+/packages/*
+!/packages/packages.php
+
 # Windows image file caches
 Thumbs.db
 ehthumbs.db

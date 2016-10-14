@@ -37,7 +37,9 @@ Lib\Loader::includeFiles(
 //***** Lib *********
 Lib\Loader::includeFiles(
 	Lib\Config::getConfig('CORE_ROOT')."lib/",
-	array(),
+	array(
+		"sql_helper.php"
+	),
 	array( // Не загружаем, так как были загружены ранее
 		"data_base.php",
 		"options.php",
@@ -55,7 +57,8 @@ Lib\Loader::includeFiles(
 	array( // Сначала загружаем эти в этом порядке
 		"field.php",
 		"scalar_field.php",
-		"date_field.php"
+		"date_field.php",
+		"string_field.php"
 	)
 );
 

@@ -7,8 +7,8 @@
  */
 
 $arConfig = array(
-	'DB_HOST' => 'localhost',
-	'DB_NAME' => 'db_terminal',
+	'DB_HOST' => '127.0.0.1',
+	'DB_NAME' => 'db_name',
 	'DB_USER' => 'root',
 	'DB_PASS' => '',
 	'DOCUMENT_ROOT' => $_SERVER["DOCUMENT_ROOT"]."/",
@@ -16,10 +16,8 @@ $arConfig = array(
 	'MSERGEEV_ROOT' => $_SERVER["DOCUMENT_ROOT"].'/msergeev/',
 	'CORE_ROOT' => $_SERVER["DOCUMENT_ROOT"].'/msergeev/core/',
 	'PACKAGES_ROOT' => $_SERVER["DOCUMENT_ROOT"].'/msergeev/packages/',
-	//'PUBLIC_ROOT' => $_SERVER["DOCUMENT_ROOT"].'/msergeev/public/',
 	'LANG' => 'ru'
 );
-
 include_once($arConfig["CORE_ROOT"].'lib/config.php');
 \MSergeev\Core\Lib\Config::init($arConfig);
 

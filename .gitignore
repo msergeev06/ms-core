@@ -2,6 +2,7 @@
 !/upload/upload.php
 /packages/*
 !/packages/packages.php
+/msergeev_config.php
 
 # Windows image file caches
 Thumbs.db

@@ -36,6 +36,7 @@ Buffer::addJS(Config::getConfig("CORE_ROOT")."js/jquery-1.11.3.js");
 <body>
 <?
 
+echo "OK!";
 
 ?>
 

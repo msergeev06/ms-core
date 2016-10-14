@@ -125,6 +125,10 @@ class Loader {
 			self::$arIncludedPackages[$namePackage] = true;
 			return true;
 		}
+		elseif (isset(self::$arIncludedPackages[$namePackage]))
+		{
+			return true;
+		}
 		else
 		{
 			return false;

@@ -27,6 +27,7 @@ class DataBase {
 
 		$this->db_conn = mysql_connect($this->host, $this->user, $this->pass);
 		mysql_select_db($this->base, $this->db_conn);
+		mysql_set_charset('utf8',$this->db_conn);
 	}
 
 	public function query (Query $obQuery)

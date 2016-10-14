@@ -158,6 +158,37 @@ class Query
 		return $this->table_name;
 	}
 
+	private function getTableTitle()
+	{
+		$tableName = $this->table_name;
+		$tableName = str_replace("ms_","",$tableName);
+		list($package,$name) = explode("_",$tableName);
+		if ($package=="core")
+		{
+			$namespace = "MSergeev\\Core\\Tables\\";
+		}
+		else
+		{
+			$namespace = "MSergeev\\Packages\\".Lib\Tools::setFirstCharToBig ($package)."\\Tables\\";
+		}
+		if (is_array($name))
+		{
+			$tName = "";
+			foreach ($name as $n)
+			{
+				$tName .= Lib\Tools::setFirstCharToBig ($n);
+			}
+		}
+		else
+		{
+			$tName = Lib\Tools::setFirstCharToBig ($name);
+		}
+		$tName .= "Table";
+		$runClass = $namespace.$tName;
+
+		return $runClass::getTableTitle();
+	}
+
 	/**
 	 * Устанавливает поле PRIMARY для таблицы
 	 *
@@ -1381,7 +1412,7 @@ class Query
 			}
 		}
 		if ($primaryField != "") $sql .= ",\n\tPRIMARY KEY (".$helper->wrapQuotes($primaryField).")";
-		$sql .= "\n\t) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=".$this->getAutoIncrement()." ;";
+		$sql .= "\n\t) ENGINE=InnoDB CHARACTER SET=utf8 COMMENT=\"".$this->getTableTitle()."\" AUTO_INCREMENT=".$this->getAutoIncrement()." ;";
 
 		return $sql;
 	}

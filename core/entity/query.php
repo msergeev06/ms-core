@@ -162,7 +162,9 @@ class Query
 	{
 		$tableName = $this->table_name;
 		$tableName = str_replace("ms_","",$tableName);
-		list($package,$name) = explode("_",$tableName);
+		$arName = explode("_",$tableName);
+		$package = array_shift($arName);
+
 		if ($package=="core")
 		{
 			$namespace = "MSergeev\\Core\\Tables\\";
@@ -171,17 +173,17 @@ class Query
 		{
 			$namespace = "MSergeev\\Packages\\".Lib\Tools::setFirstCharToBig ($package)."\\Tables\\";
 		}
-		if (is_array($name))
+		if (is_array($arName))
 		{
 			$tName = "";
-			foreach ($name as $n)
+			foreach ($arName as $n)
 			{
 				$tName .= Lib\Tools::setFirstCharToBig ($n);
 			}
 		}
 		else
 		{
-			$tName = Lib\Tools::setFirstCharToBig ($name);
+			$tName = Lib\Tools::setFirstCharToBig ($arName);
 		}
 		$tName .= "Table";
 		$runClass = $namespace.$tName;

@@ -65,3 +65,10 @@ Lib\Loader::includeFiles(
 //***** Tables ********
 Lib\Loader::includeFiles(Lib\Config::getConfig('CORE_ROOT')."tables/");
 
+//Проверяем используется ли сборка на MajorDoMo. Если да и пакет Majordomo установлен, подключаем его
+if (Lib\Config::getConfig('USE_MAJORDOMO') && Lib\Loader::issetPackage('majordomo'))
+{
+	Lib\Loader::IncludePackage('majordomo');
+	//Проверяем необходимость http-авторизации и при необходимости предлагаем авторизоваться
+	\MSergeev\Packages\Majordomo\Lib\Http::checkAutorize();
+}

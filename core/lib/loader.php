@@ -1,8 +1,8 @@
 <?php
 /**
  * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * @package MSergeev\Core
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -10,11 +10,30 @@ namespace MSergeev\Core\Lib;
 
 class Loader {
 
+	/**
+	 * @var array $arPackage Список установленных пакетов и их параметров
+	 */
 	private static $arPackage;
+
+	/**
+	 * @var string $packagesRoot Полный путь к установленным пакетам
+	 */
 	private static $packagesRoot;
+
+	/**
+	 * @var string $uploadRoot Полный путь к директории загрузки пользовательских файлов
+	 */
 	private static $uploadRoot;
+
+	/**
+	 * @var array $arIncludedPackages Список уже загруженных пакетов
+	 */
 	private static $arIncludedPackages;
 
+	/**
+	 * Loader::init
+	 * Инициализация пакетов. Создает список установленных пакетов
+	 */
 	public static function init () {
 		self::$packagesRoot = Config::getConfig("PACKAGES_ROOT");
 		self::$uploadRoot = Config::getConfig("MSERGEEV_ROOT")."upload/";
@@ -34,6 +53,14 @@ class Loader {
 		}
 	}
 
+	/**
+	 * Loader::IncludePackage
+	 * Подключает классы указанного пакета
+	 *
+	 * @param string $namePackage Имя пакета
+	 *
+	 * @return bool true - если пакет подключен или уже был подключен, иначе false
+	 */
 	public static function IncludePackage ($namePackage=null)
 	{
 		//Если имя пакета задано, пакет установлен и не был загружен ранее
@@ -135,6 +162,23 @@ class Loader {
 		}
 	}
 
+	/**
+	 * @deprecated
+	 * @see Loader::IncludePackage
+	 */
+	public static function IncludeModule ($nameModule=null)
+	{
+		return self::IncludePackage($nameModule);
+	}
+
+	/**
+	 * Loader::issetPackage
+	 * Проверяет, установлен ли указанный пакет
+	 *
+	 * @param string $namePackage Имя пакета
+	 *
+	 * @return bool TRUE - установлен, FALSE в противном случае
+	 */
 	public static function issetPackage ($namePackage=null) {
 		if (!is_null($namePackage) && isset(static::$arPackage[$namePackage]))
 		{
@@ -146,6 +190,14 @@ class Loader {
 		}
 	}
 
+	/**
+	 * Loader::getPublic
+	 * Возвращает полный путь к публичной директории пакета
+	 *
+	 * @param string $namePackage Имя пакета
+	 *
+	 * @return string|bool  Строка - путь, либо false
+	 */
 	public static function getPublic ($namePackage=null)
 	{
 		if (!is_null($namePackage) && isset(static::$arPackage[$namePackage]))
@@ -158,6 +210,14 @@ class Loader {
 		}
 	}
 
+	/**
+	 * Loader::getSitePublic
+	 * Возвращает путь от корня сайта к публичной директории пакета
+	 *
+	 * @param string $namePackage   Имя пакета
+	 *
+	 * @return string|bool Путь или false
+	 */
 	public static function getSitePublic ($namePackage=null)
 	{
 		if (!is_null($namePackage) && isset(static::$arPackage[$namePackage]))
@@ -170,6 +230,14 @@ class Loader {
 		}
 	}
 
+	/**
+	 * Loader::getTemplate
+	 * Возвращает полный путь к текущему шаблону пакета
+	 *
+	 * @param string $namePackage   Имя пакета
+	 *
+	 * @return string|bool  Путь, илбо false
+	 */
 	public static function getTemplate ($namePackage=null)
 	{
 		if (!is_null($namePackage) && isset(static::$arPackage[$namePackage]))
@@ -182,6 +250,14 @@ class Loader {
 		}
 	}
 
+	/**
+	 * Loader::getSiteTemplate
+	 * Возвращает путь от корня сайта к текущему шаблону пакета
+	 *
+	 * @param string $namePackage   Имя пакета
+	 *
+	 * @return string|bool  Путь, либо false
+	 */
 	public static function getSiteTemplate ($namePackage=null)
 	{
 		if (!is_null($namePackage) && isset(static::$arPackage[$namePackage]))
@@ -194,6 +270,14 @@ class Loader {
 		}
 	}
 
+	/**
+	 * Loader::getUpload
+	 * Возвращает полный путь к директории загрузки пользовательских файлов пакета
+	 *
+	 * @param string $namePackage   Имя пакета
+	 *
+	 * @return string|bool  Путь, либо false
+	 */
 	public static function getUpload ($namePackage=null)
 	{
 		if (!is_null($namePackage) && isset(static::$arPackage[$namePackage]))
@@ -206,6 +290,17 @@ class Loader {
 		}
 	}
 
+	/**
+	 * Loader::includeFiles
+	 * Подключает файлы из указанной директории
+	 *
+	 * @param string $dir        Директория из которой подключаются файлы
+	 * @param array  $firstLoad  Массив пустой, либо содержащий список файлов, которые необходимо
+	 *                           грузить первыми, причем в указанном порядке
+	 * @param array  $noLoad     Массив пустой, либо содержащий список файлов, которые не нужно
+	 *                           загружать. Если пустой, автоматически игнорируются:
+	 *                           '.', '..', '.readme'
+	 */
 	public static function includeFiles ($dir, $firstLoad=array(), $noLoad=array())
 	{
 		//$dir = Config::getConfig('CORE_ROOT')."lib/";

@@ -69,6 +69,10 @@ Lib\Loader::includeFiles(Lib\Config::getConfig('CORE_ROOT')."tables/");
 if (Lib\Config::getConfig('USE_MAJORDOMO') && Lib\Loader::issetPackage('majordomo'))
 {
 	Lib\Loader::IncludePackage('majordomo');
-	//Проверяем необходимость http-авторизации и при необходимости предлагаем авторизоваться
-	\MSergeev\Packages\Majordomo\Lib\Http::checkAutorize();
+
+	if (!Lib\Config::getConfig('MAJORDOMO_CYCLES'))
+	{
+		//Проверяем необходимость http-авторизации и при необходимости предлагаем авторизоваться
+		\MSergeev\Packages\Majordomo\Lib\Http::checkAutorize();
+	}
 }

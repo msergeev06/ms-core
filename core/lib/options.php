@@ -1,8 +1,12 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\Options
+ * Опции ядра и пакетов.
+ * Используется для хранения и получения различных опций ядра и установленных пакетов
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -10,46 +14,100 @@ namespace MSergeev\Core\Lib;
 use MSergeev\Core\Entity\Query;
 use \MSergeev\Core\Tables;
 
-class Options {
-
+class Options
+{
+	/**
+	 * @var array Массив всех известных в данной сессии опций
+	 */
 	protected static $arOptions;
 
-	public static function init () {
-        include_once(Config::getConfig('CORE_ROOT')."default_options.php");
+	/**
+	 * Инициализация пакета. Загружает данные из файла ядра default_options.php
+	 *
+	 * @api
+	 */
+	public static function init ()
+	{
+		$arDefaultOptions = array();
+		include_once(Config::getConfig('CORE_ROOT')."default_options.php");
 
 		foreach ($arDefaultOptions as $option => $value) {
-			static::$arOptions[$option] = $value;
+			self::$arOptions[$option] = $value;
 		}
 	}
 
+	/**
+	 * Функция обертка, возвращающая значение указанной опции в виде строки
+	 *
+	 * @api
+	 *
+	 * @param string $optionName Имя опции
+	 *
+	 * @return bool|string Значение указанной опции, либо false
+	 */
 	public static function getOptionStr ($optionName) {
 		$optionName = strtoupper($optionName);
 
-		return static::getOption ($optionName);
+		return self::getOption ($optionName);
 	}
 
-
+	/**
+	 * Функция обертка, возвращающая значение указанной опции в виде целого числа
+	 *
+	 * @api
+	 *
+	 * @param string $optionName Имя опции
+	 *
+	 * @return bool|int Целочисленное значение указанной опции, либо false
+	 */
 	public static function getOptionInt($optionName) {
 		$optionName = strtoupper($optionName);
 
-		return intval(static::getOption($optionName));
+		return intval(self::getOption($optionName));
 	}
 
+	/**
+	 * Функция обертка, возвращающая значение указанной опции в виде вещественного числа
+	 *
+	 * @api
+	 *
+	 * @param string $optionName Имя опции
+	 *
+	 * @return bool|float Вещественное значение указанной опции, либо false
+	 */
 	public static function getOptionFloat($optionName) {
 		$optionName = strtoupper($optionName);
 
-		return floatval(static::getOption($optionName));
+		return floatval(self::getOption($optionName));
 	}
 
-	public static function setPackageDefaultOption ($optionName, $optionValue)
+	/**
+	 * Функция добавляющая опщии по-умолчанию, без записи новых в DB
+	 *
+	 * @api
+	 *
+	 * @param string $optionName  Название опции
+	 * @param mixed  $optionValue Значение опции
+	 */
+	public static function setDefaultOption ($optionName, $optionValue)
 	{
-		static::$arOptions[$optionName] = $optionValue;
+		self::$arOptions[$optionName] = $optionValue;
 	}
 
+	/**
+	 * Функция добавляет новые опции в базу данных и в текущую сессию
+	 *
+	 * @api
+	 *
+	 * @param string $optionName  Название опции
+	 * @param mixed  $optionValue Значение опции
+	 *
+	 * @return bool true - опция сохранена, false - ошибка сохранения
+	 */
 	public static function setOption ($optionName, $optionValue)
 	{
 		$optionName = strtoupper($optionName);
-		if (!isset(static::$arOptions[$optionName]))
+		if (!isset(self::$arOptions[$optionName]))
 		{
 			$arInsert = array(
 				'NAME' => $optionName,
@@ -72,7 +130,7 @@ class Options {
 				$res = $query->exec();
 				if ($res->getResult())
 				{
-					static::$arOptions[$optionName] = $optionValue;
+					self::$arOptions[$optionName] = $optionValue;
 					return true;
 				}
 				else
@@ -91,7 +149,7 @@ class Options {
 				$res = $query->exec();
 				if ($res->getResult())
 				{
-					static::$arOptions[$optionName] = $optionValue;
+					self::$arOptions[$optionName] = $optionValue;
 					return true;
 				}
 				else
@@ -106,11 +164,21 @@ class Options {
 		}
 	}
 
+	/**
+	 * Функция возвращает значение опции либо из массива,
+	 * либо из базы данных, сохранив в массиве
+	 *
+	 * @ignore
+	 *
+	 * @param string $optionName Имя опции
+	 *
+	 * @return bool|mixed Значение опции, либо false
+	 */
 	protected static function getOption ($optionName)
 	{
 		$optionName = strtoupper($optionName);
-		if (isset(static::$arOptions[$optionName])) {
-			return static::$arOptions[$optionName];
+		if (isset(self::$arOptions[$optionName])) {
+			return self::$arOptions[$optionName];
 		}
 		else {
 			$result = Tables\OptionsTable::getList(array(
@@ -120,6 +188,7 @@ class Options {
 			));
 			if (!empty($result))
 			{
+				self::$arOptions[$optionName] = $result[0]['VALUE'];
 				return $result[0]['VALUE'];
 			}
 			else
@@ -129,6 +198,5 @@ class Options {
 		}
 
 	}
-
 
 }

@@ -1,8 +1,11 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\Webix
+ * Работа с дополнительной библиотекой Webix
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -12,12 +15,53 @@ use MSergeev\Core\Exception;
 
 class Webix
 {
-	protected static
-		$coreRoot = null,
-		$mainJs = null,
-		$mainCss = null,
-		$otherCssCatalog = null;
+	/**
+	 * @var string Путь к корню
+	 */
+	protected static $coreRoot = null;
 
+	/**
+	 * @var string Путь к главному JS файлу
+	 */
+	protected static $mainJs = null;
+
+	/**
+	 * @var string Путь к главному CSS файлу
+	 */
+	protected static $mainCss = null;
+
+	/**
+	 * @var string Путь к каталогу с дополнительными CSS файлами
+	 */
+	protected static $otherCssCatalog = null;
+
+	/**
+	 * Инициализация переменных и подключение библиотеки
+	 *
+	 * @api
+	 */
+	public static function init()
+	{
+		if (is_null(static::$coreRoot))
+		{
+			static::$coreRoot = Config::getConfig('CORE_ROOT');
+		}
+		if (is_null(static::$mainJs))
+		{
+			static::$mainJs = static::$coreRoot.'plugins/webix/codebase/webix.js';
+		}
+		if (is_null(static::$mainCss))
+		{
+			static::$mainCss = static::$coreRoot.'plugins/webix/codebase/webix.css';
+		}
+		if (is_null(static::$otherCssCatalog))
+		{
+			static::$otherCssCatalog = static::$coreRoot.'plugins/webix/codebase/css/';
+		}
+		//if
+		Buffer::addJS(static::$mainJs);
+		Buffer::addCSS(static::$mainCss);
+	}
 
 	public static function showDataTable ($arData=null)
 	{
@@ -276,26 +320,4 @@ class Webix
 		Buffer::addCSS(static::$otherCssCatalog.'samples.css');
 	}
 
-	public static function init()
-	{
-		if (is_null(static::$coreRoot))
-		{
-			static::$coreRoot = Config::getConfig('CORE_ROOT');
-		}
-		if (is_null(static::$mainJs))
-		{
-			static::$mainJs = static::$coreRoot.'plugins/webix/codebase/webix.js';
-		}
-		if (is_null(static::$mainCss))
-		{
-			static::$mainCss = static::$coreRoot.'plugins/webix/codebase/webix.css';
-		}
-		if (is_null(static::$otherCssCatalog))
-		{
-			static::$otherCssCatalog = static::$coreRoot.'plugins/webix/codebase/css/';
-		}
-		//if
-		Buffer::addJS(static::$mainJs);
-		Buffer::addCSS(static::$mainCss);
-	}
 }

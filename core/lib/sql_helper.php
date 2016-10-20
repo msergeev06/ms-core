@@ -1,8 +1,11 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\SqlHelper
+ * Помощник обработки SQL запросов
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -10,18 +13,38 @@ namespace MSergeev\Core\Lib;
 
 class SqlHelper
 {
+	/**
+	 * Константа, содержащая кавычку, используемую в SQL запросах
+	 */
 	const QUOTES = '`';
 
+	/**
+	 * Конструктор. Пустой
+	 */
 	public function __construct ()
 	{
 
 	}
 
+	/**
+	 * Возвращает объект класса SqlHelperDate, для получения доступа к его функциям
+	 *
+	 * @method convertDateFromDB
+	 * @method convertDateToDB
+	 *
+	 * @return SqlHelperDate
+	 */
 	public function helperDate ()
 	{
 		return new SqlHelperDate();
 	}
 
+	/**
+	 * Возвращает объект класса SqlHelperMath, для получения доступа к его функциям
+	 *
+	 *
+	 * @return SqlHelperMath
+	 */
 	public function helperMath ()
 	{
 		return new SqlHelperMath();

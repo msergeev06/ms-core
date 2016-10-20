@@ -1,8 +1,11 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\Tools
+ * Дополнительные инструменты ядра
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -10,7 +13,15 @@ namespace MSergeev\Core\Lib;
 
 use MSergeev\Core\Exception;
 
-class Tools {
+class Tools
+{
+	/**
+	 * Функция генерирует код из полученной текстовой строки
+	 *
+	 * @api
+	 *
+	 * @return string
+	 */
 	public static function generateCode ()
 	{
 		$text = func_get_arg (0);
@@ -39,6 +50,15 @@ class Tools {
 		return $code;
 	}
 
+	/**
+	 * Переводит русский символ в латинский
+	 *
+	 * @api
+	 *
+	 * @param string $char Русский символ
+	 *
+	 * @return string Латинский символ
+	 */
 	public static function convertRusToLat ($char)
 	{
 		switch ($char)
@@ -219,6 +239,16 @@ class Tools {
 		}
 	}
 
+	/**
+	 * Превращает булевское значение в символ
+	 *
+	 * @api
+	 *
+	 * @example true  => 'Y'
+	 * @example false => 'N'
+	 *
+	 * @return string
+	 */
 	public static function boolToStr () {
 		$bool = func_get_arg (0);
 
@@ -233,6 +263,17 @@ class Tools {
 		}
 	}
 
+	/**
+	 * Превращает строковое значение в булевское
+	 * 'Y' превращается в true, остальное в false
+	 *
+	 * @api
+	 *
+	 * @example 'Y' => true
+	 * @example 'abrakadabra' => false
+	 *
+	 * @return bool
+	 */
 	public static function strToBool () {
 		$str = func_get_arg(0);
 
@@ -247,19 +288,47 @@ class Tools {
 		}
 	}
 
-    public static function multiplication ($arMultiplier) {
-        $result = 1;
-        foreach ($arMultiplier as $multiplier) {
-            $result = $result * $multiplier;
-        }
+	/**
+	 * multiplication
+	 *
+	 * @ignore
+	 *
+	 * @param $arMultiplier
+	 *
+	 * @return int
+	 */
+	public static function multiplication ($arMultiplier)
+	{
+		$result = 1;
+		foreach ($arMultiplier as $multiplier) {
+			$result = $result * $multiplier;
+		}
 
-        return $result;
-    }
+		return $result;
+	}
 
+	/**
+	 * Формирует относительный путь из абсолютного
+	 *
+	 * @api
+	 *
+	 * @param string $path Абсолютный путь
+	 *
+	 * @return string Относительный путь
+	 */
 	public static function getSitePath ($path) {
 		return str_replace(Config::getConfig("SITE_ROOT"),"",$path);
 	}
 
+	/**
+	 * Возвращает имя класса, описывающего таблицу, по ее имени в базе данных
+	 *
+	 * @api
+	 *
+	 * @param string $strTableName Имя таблицы в базе данных
+	 *
+	 * @return string Имя класса описывающего таблицу
+	 */
 	public static function getClassNameByTableName ($strTableName)
 	{
 		$strClassName = "MSergeev\\";
@@ -291,6 +360,17 @@ class Tools {
 		return $strClassName;
 	}
 
+	/**
+	 * Запускает функцию класса описывающего таблицу для указанного имени таблицы
+	 *
+	 * @api
+	 *
+	 * @param string $strTable    Имя таблицы в базе данных
+	 * @param string $strFunction Имя функции в классе описывающем таблицу
+	 * @param array  $arParams    Передаваемые параметры
+	 *
+	 * @return mixed
+	 */
 	public static function runTableClassFunction ($strTable,$strFunction,$arParams=array())
 	{
 		$strClassFunction = static::getClassNameByTableName($strTable);
@@ -305,6 +385,15 @@ class Tools {
 		}
 	}
 
+	/**
+	 * Возвращает строку, у которой первый символ переведен в верхний регистр
+	 *
+	 * @api
+	 *
+	 * @param string $str Исходная строка
+	 *
+	 * @return string
+	 */
 	public static function setFirstCharToBig ($str)
 	{
 		$str = iconv("utf-8","windows-1251",$str);
@@ -315,27 +404,15 @@ class Tools {
 	}
 
 	/**
-	 * @deprecated
-	 * @see DateHelper->getShortNameDayOfWeek
+	 * Преобразует полученную строку к значению floatval,
+	 * убирая пробелы и заменяя запятую ',' точкой '.'
+	 *
+	 * @api
+	 *
+	 * @param string $strFloat Исходная строка
+	 *
+	 * @return float Значение
 	 */
-	public static function getNameDayOfWeek ($day=null)
-	{
-		$dateHelper = new DateHelper();
-
-		return $dateHelper->getShortNameDayOfWeek($day);
-	}
-
-	/**
-	 * @deprecated
-	 * @see DateHelper->getNameMonth
-	 */
-	public static function getNameMonth ($month=null)
-	{
-		$dateHelper = new DateHelper();
-
-		return $dateHelper->getNameMonth($month);
-	}
-
 	public static function validateFloatVal ($strFloat)
 	{
 		$temp = str_replace(' ','',$strFloat);
@@ -345,15 +422,30 @@ class Tools {
 		return $temp;
 	}
 
+	/**
+	 * Преобразует полученную строку к значению intval,
+	 * используя функцию self::validateFloatVal
+	 *
+	 * @api
+	 *
+	 * @param string $strInt Исходная строка
+	 *
+	 * @return int Значение
+	 */
 	public static function validateIntVal ($strInt)
 	{
-		$temp = str_replace(' ','',$strInt);
-		$temp = str_replace(',','.',$temp);
-		$temp = intval($temp);
-
-		return $temp;
+		return intval(self::validateIntVal($strInt));
 	}
 
+	/**
+	 * Функция транслитирует строку
+	 *
+	 * @api
+	 *
+	 * @param string $string Исходная строка
+	 *
+	 * @return string Транслитированная строка
+	 */
 	public static function transliterate($string)
 	{
 		$converter = array(

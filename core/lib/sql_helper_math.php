@@ -1,8 +1,11 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\SqlHelperMath
+ * Помощник обработки SQL запросов, связанных с математическими функциями
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 

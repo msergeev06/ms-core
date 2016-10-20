@@ -1,11 +1,13 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\Sections
+ * Обработка дерева каталогов
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
-
 //http://www.getinfo.ru/article610.html
 namespace MSergeev\Core\Lib;
 

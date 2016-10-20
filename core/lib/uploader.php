@@ -1,14 +1,15 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\Uploader
+ * Обработка загружаемой пользователями информации
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
 namespace MSergeev\Core\Lib;
-
-use MSergeev\Core\Exception\ArgumentNullException;
 
 class Uploader
 {
@@ -21,24 +22,5 @@ class Uploader
 
 	}
 
-	public static function getUploadDir ()
-	{
-		return Config::getConfig("MSERGEEV_ROOT")."upload/";
-	}
 
-	public static function getUploadDirPackage ($strPackageName)
-	{
-		try
-		{
-			if (strlen($strPackageName)==0)
-			{
-				throw new ArgumentNullException("strPackageName");
-			}
-			return Loader::getUpload($strPackageName);
-		}
-		catch (ArgumentNullException $e)
-		{
-			$e->showException();
-		}
-	}
 }

@@ -1,8 +1,12 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\DataManager
+ * Используется для описания и обработки таблиц базы данных.
+ * Наследуется в классах описания таблиц ядра и пакетов
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -13,6 +17,7 @@ use MSergeev\Core\Exception;
 
 class DataManager {
 
+	/** Константы для обработки событий. Временно не используются */
 	const EVENT_ON_BEFORE_ADD = "OnBeforeAdd";
 	const EVENT_ON_ADD = "OnAdd";
 	const EVENT_ON_AFTER_ADD = "OnAfterAdd";
@@ -23,15 +28,26 @@ class DataManager {
 	const EVENT_ON_DELETE = "OnDelete";
 	const EVENT_ON_AFTER_DELETE = "OnAfterDelete";
 
+	/**
+	 * Возвращает имя текущего класса
+	 *
+	 * @api
+	 *
+	 * @return string Имя класса
+	 */
 	public static function getClassName ()
 	{
 		return __CLASS__;
 	}
 
 	/**
-	 * getTableName
+	 * Возвращает название таблицы в базе
 	 *
-	 * @return null|string
+	 * @api
+	 *
+	 * @example 'ms_core_options'
+	 *
+	 * @return string название таблицы в базе
 	 */
 	public static function getTableName()
 	{
@@ -39,9 +55,13 @@ class DataManager {
 	}
 
 	/**
-	 * getTableTitle
+	 * Возвращает описание таблицы
 	 *
-	 * @return null|string
+	 * @api
+	 *
+	 * @example 'Опции'
+	 *
+	 * @return string Текст описания таблицы
 	 */
 	public static function getTableTitle()
 	{
@@ -49,44 +69,76 @@ class DataManager {
 	}
 
 	/**
-	 * getMap
+	 * Возвращает массив сущностей полей таблицы базы данных.
+	 * Не рекомендуется использовать в API. Используйте getMapArray
 	 *
-	 * @return array
+	 * @see static::getMapArray
+	 *
+	 * @return array Массив сущностей полей таблицы базы данных
 	 */
 	public static function getMap()
 	{
 		return array();
 	}
 
-    public static function getMapArray()
-    {
-        $arMap = static::getMap();
-        $arMapArray = array();
-        foreach ($arMap as $id=>$field)
-        {
-            $name = $field->getColumnName();
-            $arMapArray[$name] = $field;
-        }
+	/**
+	 * Возвращает обработанный массив сущностей полей таблицы базы данных.
+	 * Обрабатывает массив, полученный функцией getMap
+	 *
+	 * @api
+	 *
+	 * @return array Обработанный массив сущностей полей таблицы базы данных
+	 */
+	public static function getMapArray()
+	{
+		$arMap = static::getMap();
+		$arMapArray = array();
+		foreach ($arMap as $id=>$field)
+		{
+			$name = $field->getColumnName();
+			$arMapArray[$name] = $field;
+		}
 
-        return $arMapArray;
-    }
+		return $arMapArray;
+	}
 
 	/**
-	 * getArrayDefaultValues
+	 * Возвращает массив дефолтных значений таблицы,
+	 * которые добавляются в таблицу при установке ядра или пакета
 	 *
-	 * @return array
+	 * @api
+	 *
+	 * @return array Массив дефолтных значений таблицы
 	 */
 	public static function getArrayDefaultValues () {
 		return array();
 	}
 
+	/**
+	 * Возвращает массив описывающий связанные с таблицей другие таблицы
+	 * и объединяющие их поля
+	 *
+	 * @api
+	 *
+	 * @return array Массив связей таблиц
+	 */
 	public static function getTableLinks () {
 		return array();
 	}
 
+	/**
+	 * Добавляет значения в таблицу
+	 *
+	 * @ignore
+	 *
+	 * @param array $parameters Массив содержащий значения таблицы в поле 'VALUES'
+	 *
+	 * @return DBResult Результат mysql запроса
+	 */
 	public static function add ($parameters)
 	{
 		$query = static::query("insert");
+
 		$query->setInsertParams(
 			$parameters["VALUES"],
 			static::getTableName(),
@@ -97,6 +149,16 @@ class DataManager {
 		return $res;
 	}
 
+	/**
+	 * Обновляет значения в таблице
+	 *
+	 * @ignore
+	 *
+	 * @param mixed $primary Поле PRIMARY таблицы
+	 * @param array $parameters Массив значений таблицы в поле 'VALUES'
+	 *
+	 * @return DBResult Результат mysql запроса
+	 */
 	public static function update ($primary, $parameters)
 	{
 		$query = static::query("update");
@@ -106,10 +168,21 @@ class DataManager {
 			static::getTableName(),
 			static::getMapArray()
 		);
-		$query->exec();
+		$res = $query->exec();
 
+		return $res;
 	}
 
+	/**
+	 * Удаляет запись из таблицы
+	 *
+	 * @ignore
+	 *
+	 * @param mixed $primary Поле PRIMARY таблицы
+	 * @param bool  $confirm Флаг, подтверждающий удаление всех связанных записей в других таблицах
+	 *
+	 * @return DBResult Результат mysql запроса
+	 */
 	public static function delete ($primary,$confirm=false)
 	{
 		$query = static::query("delete");
@@ -120,20 +193,42 @@ class DataManager {
 			static::getMapArray(),
 			static::getTableLinks()
 		);
-		$query->exec();
+		$res = $query->exec();
+
+		return $res;
 	}
 
+	/**
+	 * @deprecated
+	 * @ignore
+	 *
+	 * @param       $primary
+	 * @param array $parameters
+	 */
 	public static function getByPrimary ($primary, array $parameters = array())
 	{
 		static::normalizePrimary($primary);
 
 	}
 
+	/**
+	 * @deprecated
+	 * @ignore
+	 *
+	 * @param $id
+	 */
 	public static function getById($id)
 	{
 		return static::getByPrimary($id);
 	}
 
+	/**
+	 * Возвращает поле PRIMARY таблицы
+	 *
+	 * @api
+	 *
+	 * @return string|bool Название поля, либо false
+	 */
 	public static function getPrimaryField ()
 	{
 		$arMap = static::getMap();
@@ -144,8 +239,17 @@ class DataManager {
 				return $columnName;
 			}
 		}
+
+		return false;
 	}
 
+	/**
+	 * Возвращает массив полей таблицы
+	 *
+	 * @api
+	 *
+	 * @return array Массив полей таблицы
+	 */
 	public static function getTableFields()
 	{
 		$arMap = static::getMap();
@@ -157,6 +261,14 @@ class DataManager {
 		return $arTableFields;
 	}
 
+	/**
+	 * Обертка для вызова функции getList с произвольными параметрами
+	 * @see static::getList
+	 *
+	 * @api
+	 *
+	 * @return array|bool
+	 */
 	public static function getListFunc ()
 	{
 		try
@@ -176,6 +288,16 @@ class DataManager {
 		return static::getList($params[0]);
 	}
 
+	/**
+	 * Осуществляет выборку из таблицы значений по указанным параметрам
+	 *
+	 * @api
+	 *
+	 * @param array $arParams Параметры запроса к базе данных
+	 * @param bool  $showSql  Показать SQL запрос, вместо выборки (для отладки)
+	 *
+	 * @return array|bool Массив значений таблицы, массив с SQL запросом, либо в случае неудачи false
+	 */
 	public static function getList ($arParams,$showSql=false)
 	{
 		$query = new Entity\Query("select");
@@ -273,11 +395,27 @@ class DataManager {
 
 	}
 
+	/**
+	 * Функция возвращает объект Query заданного типа
+	 *
+	 * @api
+	 *
+	 * @param string $type Тип объекта Query
+	 *
+	 * @return Entity\Query объект Query заданного типа
+	 */
 	public static function query ($type)
 	{
 		return new Entity\Query($type);
 	}
 
+	/**
+	 * Функция добавляет в таблицу значения по-умолчанию, описанные в файле таблицы
+	 *
+	 * @api
+	 *
+	 * @return bool|DBResult Результат mysql запроса, либо false
+	 */
 	public static function insertDefaultRows ()
 	{
 		$arDefaultValues = static::getArrayDefaultValues();
@@ -298,6 +436,13 @@ class DataManager {
 		}
 	}
 
+	/**
+	 * Функция создает таблицу
+	 *
+	 * @api
+	 *
+	 * @return DBResult Результат mysql запроса
+	 */
 	public static function createTable ()
 	{
 		$AUTO_INCREMENT = count(static::getArrayDefaultValues())+1;
@@ -312,16 +457,13 @@ class DataManager {
 		return $res;
 	}
 
-	/*
-	public static function installTable ()
-	{
-		$resCreate = static::createTable();
-		$resInsert = static::insertDefaultRows();
-
-		return ($resCreate && $resInsert);
-	}
-	*/
-
+	/**
+	 * Функция нормализует поле PRIMARY, переданное по ссылке
+	 *
+	 * @ignore
+	 *
+	 * @param mixed $primary
+	 */
 	protected static function normalizePrimary (&$primary)
 	{
 		$prim = '';
@@ -337,6 +479,13 @@ class DataManager {
 		}
 	}
 
+	/**
+	 * Функция проверяет описанные связи таблицы, используя запросы к DB
+	 *
+	 * @api
+	 *
+	 * @return bool Связи существуют - true, инае - false
+	 */
 	public static function checkTableLinks()
 	{
 		$bLinks = false;

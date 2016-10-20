@@ -1,7 +1,10 @@
 <?php
 /**
- * MSergeev
+ * MSergeev\Core\Lib\Loader
+ * Отвечает за загрузку пакетов
+ *
  * @package MSergeev\Core
+ * @subpackage Lib
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
@@ -11,28 +14,29 @@ namespace MSergeev\Core\Lib;
 class Loader {
 
 	/**
-	 * @var array $arPackage Список установленных пакетов и их параметров
+	 * @var array Список установленных пакетов и их параметров
 	 */
 	private static $arPackage;
 
 	/**
-	 * @var string $packagesRoot Полный путь к установленным пакетам
+	 * @var string Полный путь к установленным пакетам
 	 */
 	private static $packagesRoot;
 
 	/**
-	 * @var string $uploadRoot Полный путь к директории загрузки пользовательских файлов
+	 * @var string Полный путь к директории загрузки пользовательских файлов
 	 */
 	private static $uploadRoot;
 
 	/**
-	 * @var array $arIncludedPackages Список уже загруженных пакетов
+	 * @var array Список уже загруженных пакетов
 	 */
 	private static $arIncludedPackages;
 
 	/**
-	 * Loader::init
 	 * Инициализация пакетов. Создает список установленных пакетов
+	 *
+	 * @api
 	 */
 	public static function init () {
 		self::$packagesRoot = Config::getConfig("PACKAGES_ROOT");
@@ -54,8 +58,9 @@ class Loader {
 	}
 
 	/**
-	 * Loader::IncludePackage
 	 * Подключает классы указанного пакета
+	 *
+	 * @api
 	 *
 	 * @param string $namePackage Имя пакета
 	 *
@@ -126,7 +131,7 @@ class Loader {
 						{
 							$defTempl = $optionValue;
 						}
-						Options::setPackageDefaultOption($optionName,$optionValue);
+						Options::setDefaultOption($optionName,$optionValue);
 					}
 				}
 			}
@@ -136,9 +141,11 @@ class Loader {
 				$defTempl = '.default';
 			}
 			//Загружаем языковые файлы для пакета
-			Loc::setModuleMessages($namePackage);
+			Loc::setPackageMessages($namePackage);
 			//Путь к публичной директории
 			self::$arPackage[$namePackage]["PUBLIC"] = self::$packagesRoot.$namePackage."/public/";
+			//Путь к директории с описанием таблиц пакета
+			self::$arPackage[$namePackage]["TABLES"] = self::$packagesRoot.$namePackage."/tables/";
 			//Относительный путь к публичной директории
 			self::$arPackage[$namePackage]["SITE_PUBLIC"] = str_replace(Config::getConfig('SITE_ROOT'),"",self::$arPackage[$namePackage]["PUBLIC"]);
 			self::$arPackage[$namePackage]["SITE_PUBLIC"] = str_replace('\\',"/",self::$arPackage[$namePackage]["SITE_PUBLIC"]);
@@ -172,8 +179,9 @@ class Loader {
 	}
 
 	/**
-	 * Loader::issetPackage
 	 * Проверяет, установлен ли указанный пакет
+	 *
+	 * @api
 	 *
 	 * @param string $namePackage Имя пакета
 	 *
@@ -191,8 +199,9 @@ class Loader {
 	}
 
 	/**
-	 * Loader::getPublic
 	 * Возвращает полный путь к публичной директории пакета
+	 *
+	 * @api
 	 *
 	 * @param string $namePackage Имя пакета
 	 *
@@ -211,8 +220,9 @@ class Loader {
 	}
 
 	/**
-	 * Loader::getSitePublic
 	 * Возвращает путь от корня сайта к публичной директории пакета
+	 *
+	 * @api
 	 *
 	 * @param string $namePackage   Имя пакета
 	 *
@@ -231,8 +241,30 @@ class Loader {
 	}
 
 	/**
-	 * Loader::getTemplate
+	 * Возвращает полный путь к директории с описанием таблиц пакета
+	 *
+	 * @api
+	 *
+	 * @param string $namePackage Имя пакета
+	 *
+	 * @return string|bool  Строка - путь, либо false
+	 */
+	public static function getTables ($namePackage=null)
+	{
+		if (!is_null($namePackage) && isset(static::$arPackage[$namePackage]))
+		{
+			return static::$arPackage[$namePackage]["TABLES"];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
 	 * Возвращает полный путь к текущему шаблону пакета
+	 *
+	 * @api
 	 *
 	 * @param string $namePackage   Имя пакета
 	 *
@@ -251,8 +283,9 @@ class Loader {
 	}
 
 	/**
-	 * Loader::getSiteTemplate
 	 * Возвращает путь от корня сайта к текущему шаблону пакета
+	 *
+	 * @api
 	 *
 	 * @param string $namePackage   Имя пакета
 	 *
@@ -271,8 +304,9 @@ class Loader {
 	}
 
 	/**
-	 * Loader::getUpload
 	 * Возвращает полный путь к директории загрузки пользовательских файлов пакета
+	 *
+	 * @api
 	 *
 	 * @param string $namePackage   Имя пакета
 	 *
@@ -291,8 +325,9 @@ class Loader {
 	}
 
 	/**
-	 * Loader::includeFiles
 	 * Подключает файлы из указанной директории
+	 *
+	 * @api
 	 *
 	 * @param string $dir        Директория из которой подключаются файлы
 	 * @param array  $firstLoad  Массив пустой, либо содержащий список файлов, которые необходимо

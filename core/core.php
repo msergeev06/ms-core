@@ -49,7 +49,8 @@ Lib\Loader::includeFiles(
 	)
 );
 
-Lib\Loc::setModuleMessages();
+//***** Loc *********
+Lib\Loc::setPackageMessages();
 
 //***** Entity ********
 Lib\Loader::includeFiles(

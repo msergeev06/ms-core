@@ -1,8 +1,11 @@
 <?php
 /**
- * MSergeev\Core\Lib
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\DataBase
+ * Осуществляет подключение к базе данных и посылает запросы к базе
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -12,12 +15,36 @@ use MSergeev\Core\Entity\Query;
 
 class DataBase {
 
+	/**
+	 * @var string Hostname Базы данных. Используется для подключения к DB
+	 */
 	protected $host;
+
+	/**
+	 * @var string Имя базы данных. Используется для подключения к DB
+	 */
 	protected $base;
+
+	/**
+	 * @var string Пользователь базы данных. Используется для подключения к DB
+	 */
 	protected $user;
+
+	/**
+	 * @var string Пароль пользователя базы данных. Используется для подключения к DB
+	 */
 	protected $pass;
+
+	/**
+	 * @var resource a MySQL link identifier on success or false on failure
+	 */
 	protected $db_conn;
 
+	/**
+	 * Конструктор. Осуществляет подключение к базе данных и передает начальные параметры подключения
+	 *
+	 * @api
+	 */
 	function __construct () {
 
 		$this->host = Config::getConfig('DB_HOST');
@@ -30,6 +57,15 @@ class DataBase {
 		mysql_set_charset('utf8',$this->db_conn);
 	}
 
+	/**
+	 * Осуществляет запрос к базе данных, используя данных объекта Query
+	 *
+	 * @api
+	 *
+	 * @param Query $obQuery Объект, содержащий SQL запрос
+	 *
+	 * @return DBResult Результат MYSQL запроса
+	 */
 	public function query (Query $obQuery)
 	{
 		$sql = $obQuery->getQueryBuildParts();

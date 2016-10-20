@@ -1,8 +1,11 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Lib\Loc
+ * Локализация ядра и пакетов
+ *
+ * @package MSergeev\Core
+ * @subpackage Lib
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -10,24 +13,37 @@ namespace MSergeev\Core\Lib;
 
 class Loc
 {
+	/**
+	 * @var array Массив сообщений
+	 */
 	protected static $arMessage = array();
 
-	public static function setModuleMessages ($moduleName='',$prefix='ms_')
+	/**
+	 * Функция загружает все сообщения для текущего языка для указанного пакета
+	 * Вызывается при подключении пакета в Loader::IncludePackage, дополнительного
+	 * вызова не требует
+	 *
+	 * @api
+	 *
+	 * @param string $packageName Имя пакета (по-умолчанию '' или 'core')
+	 * @param string $prefix      Префикс (по-умолчанию 'ms_')
+	 */
+	public static function setPackageMessages ($packageName='',$prefix='ms_')
 	{
 		$prefix = strtolower($prefix);
-		$moduleName = strtolower($moduleName);
+		$packageName = strtolower($packageName);
 
 		$lang = Config::getConfig('LANG');
 
-		if ($moduleName == '' || $moduleName == 'core')
+		if ($packageName == '' || $packageName == 'core')
 		{
 			$root = Config::getConfig('CORE_ROOT');
 			$prefix .= 'core_';
 		}
 		else
 		{
-			$root = Config::getConfig('PACKAGES_ROOT').$moduleName.'/';
-			$prefix .= $moduleName.'_';
+			$root = Config::getConfig('PACKAGES_ROOT').$packageName.'/';
+			$prefix .= $packageName.'_';
 		}
 
 		$dir = $root.'loc/'.$lang.'/';
@@ -47,9 +63,33 @@ class Loc
 				closedir($dh);
 			}
 		}
-
 	}
 
+	/**
+	 * Устаревшая обертка для setPackageMessages
+	 *
+	 * @deprecated
+	 * @see Loc::setPackageMessages
+	 * @ignore
+	 *
+	 * @param string $moduleName
+	 * @param string $prefix
+	 */
+	public static function setModuleMessages ($moduleName='',$prefix='ms_')
+	{
+		self::setPackageMessages($moduleName, $prefix);
+	}
+
+	/**
+	 * Возвращает локализованный текст, заменяя теги указанными значениями
+	 *
+	 * @api
+	 *
+	 * @param string $name      Код сообщения
+	 * @param array  $arReplace Массив замен вида код_тега=>замена
+	 *
+	 * @return mixed
+	 */
 	public static function getMessage ($name,$arReplace=array())
 	{
 		$message = static::$arMessage[strtoupper($name)];
@@ -64,6 +104,16 @@ class Loc
 		return $message;
 	}
 
+	/**
+	 * Возвращает массив, содержащий все локализованнты тексты указанного пакета
+	 *
+	 * @api
+	 *
+	 * @param string $name   Имя пакета или '' == 'core'
+	 * @param string $prefix Префикс (по-умолчанию 'ms_')
+	 *
+	 * @return array
+	 */
 	public static function showAllMessagesModule ($name='',$prefix='ms_')
 	{
 		if ($name=='') $name='core';

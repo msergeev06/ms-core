@@ -208,7 +208,6 @@ class DataManager {
 	public static function getByPrimary ($primary, array $parameters = array())
 	{
 		static::normalizePrimary($primary);
-
 	}
 
 	/**

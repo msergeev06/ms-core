@@ -1,44 +1,83 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Entity\Field
+ * Сущность поля базы данных
+ *
+ * @package MSergeev\Core
+ * @subpackage Entity
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
 namespace MSergeev\Core\Entity;
 
+/**
+ * Class Field
+ * @package MSergeev\Core\Entity
+
+ * @var string                      $name                   Название поля в API
+ * @var string                      $dataType               Тип поля в базе данных
+ * @var string                      $fieldType              Тип поля в API
+ * @var array                       $initialParameters      Параметры инициализации
+ * @var string                      $title                  Описание поля
+ * @var bool                        $isSerialized           Является ли значение поля сериализованным массивом
+ * @var Field  $parentField            Родительское поле
+ * @var null|callback               $fetchDataModification  Функция обработки полученных значений из базы
+ * @var null|callback               $saveDataModification   Функция обработки перед записью значений в базу
+ * @var null|string                 $link                   Связь поля таблицы
+ */
 abstract class Field {
-	/** @var string */
+	/**
+	 * @var string Название поля в API
+	 */
 	protected $name;
 
-	/** @var string */
+	/**
+	 * @var string Тип поля в базе данных
+	 */
 	protected $dataType;
 
-	/** @var string */
+	/**
+	 * @var string Тип поля в API
+	 */
 	protected $fieldType;
 
-	/** @var array */
+	/**
+	 * @var array Параметры инициализации
+	 */
 	protected $initialParameters;
 
-	/** @var string */
+	/**
+	 * @var string Описание поля
+	 */
 	protected $title=null;
 
-    /** @var bool */
-    protected $isSerialized = false;
+	/**
+	 * @var bool Является ли значение поля сериализованным массивом
+	 */
+	protected $isSerialized = false;
 
-    /** @var Field */
-    protected $parentField;
+	/**
+	 * @var Field Родительское поле
+	 */
+	protected $parentField;
 
-    /** @var null|callback */
-    protected $fetchDataModification = null;
+	/**
+	 * @var null|callback Функция обработки полученных значений из базы
+	 */
+	protected $fetchDataModification = null;
 
-    /** @var null|callback */
-    protected $saveDataModification = null;
+	/**
+	 * @var null|callback Функция обработки перед записью значений в базу
+	 */
+	protected $saveDataModification = null;
 
-
+	/**
+	 * @var null|string Связь поля таблицы
+	 */
 	protected $link=null;
-    /*
+
+/*
     /* @var null|callback *
 	//protected $validation = null;
 
@@ -65,23 +104,14 @@ abstract class Field {
 
 	//protected $entity;
 
-	/*
-	 * @deprecated
-	 * @var array
-	 *
-    /*
-	protected static $oldDataTypes = array(
-		'float' => 'Bitrix\Main\Entity\FloatField',
-		'string' => 'Bitrix\Main\Entity\StringField',
-		'text' => 'Bitrix\Main\Entity\TextField',
-		'datetime' => 'Bitrix\Main\Entity\DatetimeField',
-		'date' => 'Bitrix\Main\Entity\DateField',
-		'integer' => 'Bitrix\Main\Entity\IntegerField',
-		'enum' => 'Bitrix\Main\Entity\EnumField',
-		'boolean' => 'Bitrix\Main\Entity\BooleanField'
-	);
-    */
+*/
 
+	/**
+	 * Конструктор. Обрабатывает начальные параметры поля
+	 *
+	 * @param string $name       Название поля в API
+	 * @param array  $parameters Параметры поля
+	 */
 	public function __construct($name, $parameters = array())
 	{
 		if (!strlen($name))
@@ -114,45 +144,98 @@ abstract class Field {
 			$this->saveDataModification = $parameters['save_data_modification'];
 		}
 
-        if (isset($parameters['serialized']) && $parameters['serialized'])
-        {
-            $this->isSerialized = $parameters['serialized'];
-        }
+		if (isset($parameters['serialized']) && $parameters['serialized'])
+		{
+			$this->isSerialized = $parameters['serialized'];
+		}
 
-        if (isset($parameters['parent']))
-        {
-            $this->parentField = $parameters['parent'];
-        }
+		if (isset($parameters['parent']))
+		{
+			$this->parentField = $parameters['parent'];
+		}
 	}
 
+	/**
+	 * Возвращает название поля в API
+	 *
+	 * @api
+	 *
+	 * @return string
+	 */
 	public function getName()
 	{
 		return $this->name;
 	}
 
-	public function getTitle() {
-
-        return $this->title;
+	/**
+	 * Возвращает описание поля
+	 *
+	 * @api
+	 *
+	 * @return string
+	 */
+	public function getTitle()
+	{
+		return $this->title;
 	}
 
-	public function getDataType() {
+	/**
+	 * Возвращает тип поля в базы данных
+	 *
+	 * @api
+	 *
+	 * @return string
+	 */
+	public function getDataType()
+	{
 		return $this->dataType;
 	}
 
-	public function getFieldType() {
+	/**
+	 * Возвращает тип поля в API
+	 *
+	 * @api
+	 *
+	 * @return string
+	 */
+	public function getFieldType()
+	{
 		return $this->fieldType;
 	}
 
+	/**
+	 * Возвращает объект родительского поля
+	 *
+	 * @api
+	 *
+	 * @return Field
+	 */
 	public function getParentField()
 	{
 		return $this->parentField;
 	}
 
+	/**
+	 * Возвращает строку - связь поля с другим полем
+	 *
+	 * @api
+	 *
+	 * @return null|string
+	 */
 	public function getLink()
 	{
 		return $this->link;
 	}
 
+	/**
+	 * Сериализует массив
+	 *
+	 * @api
+	 *
+	 * @param array|string $value Массив
+	 *
+	 * @return string
+	 */
 	public function serialize($value)
 	{
 		if (!is_string($value))
@@ -163,23 +246,64 @@ abstract class Field {
 		return $value;
 	}
 
+	/**
+	 * Десериализирует массив
+	 *
+	 * @api
+	 *
+	 * @param string $value Сериализованный массиы
+	 *
+	 * @return array
+	 */
 	public function unserialize($value)
 	{
 		return unserialize($value);
 	}
 
-    public function isSerialized ()
-    {
-        return $this->isSerialized;
-    }
+	/**
+	 * Возвращает флаг, обозначающий факт того,
+	 * является ли значение данного поля сериализованным массивом
+	 *
+	 * @return bool
+	 */
+	public function isSerialized ()
+	{
+		return $this->isSerialized;
+	}
 
-    public function getFetchDataModification ()
-    {
-        return $this->fetchDataModification;
-    }
+	/**
+	 * Возвращает название функции для обработки значений полученных из базы данных
+	 *
+	 * @api
+	 *
+	 * @return callable|null
+	 */
+	public function getFetchDataModification ()
+	{
+		return $this->fetchDataModification;
+	}
 
-    public function getSaveDataModification ()
-    {
-        return $this->saveDataModification;
-    }
+	/**
+	 * Возвращает название функции для обработки значений перед сохранением в базу данных
+	 *
+	 * @api
+	 *
+	 * @return callable|null
+	 */
+	public function getSaveDataModification ()
+	{
+		return $this->saveDataModification;
+	}
+
+	/**
+	 * Возвращает имя класса объекта
+	 *
+	 * @api
+	 *
+	 * @return string
+	 */
+	public function getClassName ()
+	{
+		return __CLASS__;
+	}
 }

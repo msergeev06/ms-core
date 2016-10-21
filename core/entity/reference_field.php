@@ -1,8 +1,13 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Entity\ReferenceField
+ * Сущность поля базы данных, содержащего справку
+ *
+ * Временно не используется
+ *
+ * @package MSergeev\Core
+ * @subpackage Entity
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 

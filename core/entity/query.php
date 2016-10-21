@@ -1,8 +1,11 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Entity\Query
+ * Сущность запроса к базе данных
+ *
+ * @package MSergeev\Core
+ * @subpackage Entity
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
@@ -10,86 +13,264 @@ namespace MSergeev\Core\Entity;
 use MSergeev\Core\Exception;
 use \MSergeev\Core\Lib;
 
+/**
+ * Class Query
+ * @package MSergeev\Core\Entity
+ *
+ * @var string      $type                   Тип Query (select|create|insert|update|delete|drop)
+ * @var array       $select                 Необработанный массив параметра select
+ * @var array       $group                  Необработанный массив параметра group
+ * @var array       $order                  Необработанный массив параметра order
+ * @var int|null    $limit                  Значение лимита записей
+ * @var int|null    $offset                 Сдвиг получения записей
+ * @var array       $filter                 Необработанный массив параметра filter
+ * @var array       $where                  Необработанный массив параметра where
+ * @var array       $insertArray            Массив значений для INSERT запроса
+ * @var array       $updateArray            Массив значений для UPDATE запроса
+ * @var string      $updatePrimary          Поле PRIMARY для UPDATE запроса
+ * @var string      $deletePrimary          Поле PRIMARY для DELETE запроса
+ * @var bool        $deleteConfirm          Флаг подтверждения удаления зависимых полей
+ * @var array       $tableLinks             Массив связей с полями таблицы
+ * @var int         $autoIncrement          Значение AUTO_INCREMENT для таблицы
+ * @var string      $filter_logic           Логика фильтра (AND|OR)
+ * @var string      $query_build_parts      Собранный SQL запрос
+ * @var string      $table_name             Название таблицы
+ * @var string      $table_alias_postfix    Алиас таблицы
+ * @var array       $table_map              Описание полей таблицы
+ * @var string      $primary_key            Поле PRIMARY
+ * @var string      $sqlSelect              Обработанный блок SELECT
+ * @var string      $sqlFrom                Обработанный блок FROM
+ * @var string      $sqlWhere               Обработанный блок WHERE
+ * @var string      $sqlOrder               Обработанный блок ORDER
+ * @var string      $sqlLimit               Обработанный блок LIMIT
+ * @var array       $arSqlFrom              Обработанный массив FROM
+ * @var array       $arSqlWhere             Обработанный массив WHERE
+ * @var array       $arFieldsEntity         Массив сущностей полей таблицы
+ *
+ * Временно не используемые переменные:
+ * @var int|null    $count_total
+ * @var int|null    $runtime
+ * @var array       $having         Необработанный массив параметра having
+ * @var             $join_map
+ * @var             $join_registry
+ * @var             $last_query
+ * @var             $replaced_aliases
+ * @var             $replaced_taliases
+ */
 class Query
 {
-	protected
-		$type=null; //Тип Query (select|create|insert|update|delete|drop)
+	/**
+	 * @var string Тип Query (select|create|insert|update|delete|drop)
+	 */
+	protected $type=null;
 
-	protected
-		$select = array(),
-		$group = array(),
-		$order = array(),
-		$limit = null,
-		$offset = null,
-		$count_total = null,
-		$runtime = null;
+	/**
+	 * @var array Необработанный массив параметра select
+	 */
+	protected $select = array();
 
-	protected
-		$filter = array(),
-		$where = array(),
-		$having = array();
+	/**
+	 * @var array Необработанный массив параметра group
+	 */
+	protected $group = array();
 
-	protected
-		$insertArray = array(),
-		$updateArray = array(),
-		$updatePrimary = null;
+	/**
+	 * @var array Необработанный массив параметра order
+	 */
+	protected $order = array();
 
-	protected
-		$deletePrimary = null,
-		$deleteConfirm = false;
+	/**
+	 * @var null Значение лимита записей
+	 */
+	protected $limit = null;
 
-	protected
-		$tableLinks = array();
+	/**
+	 * @var null Сдвиг получения записей
+	 */
+	protected $offset = null;
 
-	protected
-		$autoIncrement = 1;
+	/**
+	 * @var array Необработанный массив параметра filter
+	 */
+	protected $filter = array();
 
-	protected
-		$filter_logic = "AND";
+	/**
+	 * @var array Необработанный массив параметра where
+	 */
+	protected $where = array();
 
+	/**
+	 * @var array Массив значений для INSERT запроса
+	 */
+	protected $insertArray = array();
+
+	/**
+	 * @var array Массив значений для UPDATE запроса
+	 */
+	protected $updateArray = array();
+
+	/**
+	 * @var string Поле PRIMARY для UPDATE запроса
+	 */
+	protected $updatePrimary = null;
+
+	/**
+	 * @var string Поле PRIMARY для DELETE запроса
+	 */
+	protected $deletePrimary = null;
+
+	/**
+	 * @var bool Флаг подтверждения удаления зависимых полей
+	 */
+	protected $deleteConfirm = false;
+
+	/**
+	 * @var array Массив связей с полями таблицы
+	 */
+	protected $tableLinks = array();
+
+	/**
+	 * @var int Значение AUTO_INCREMENT для таблицы
+	 */
+	protected $autoIncrement = 1;
+
+	/**
+	 * @var string Логика фильтра (AND|OR)
+	 */
+	protected $filter_logic = "AND";
+
+	/**
+	 * @var string Собранный SQL запрос
+	 */
 	protected $query_build_parts="";
 
+	/**
+	 * @var string Название таблицы
+	 */
 	protected $table_name=null;
+
+	/**
+	 * @var string Алиас таблицы
+	 */
 	protected $table_alias_postfix = '';
+
+	/**
+	 * @var array Описание полей таблицы
+	 */
 	protected $table_map=array();
 
+	/**
+	 * @var string Поле PRIMARY
+	 */
 	protected $primary_key=null;
 
-	protected
-		$join_map = array();
+	/**
+	 * @var string Обработанный блок SELECT
+	 */
+	protected $sqlSelect = '';
 
-	/** @var array list of used joins */
-	protected $join_registry;
+	/**
+	 * @var string Обработанный блок FROM
+	 */
+	protected $sqlFrom = '';
 
-	/** @var string Last executed SQL query */
-	protected static $last_query;
+	/**
+	 * @var string Обработанный блок WHERE
+	 */
+	protected $sqlWhere = '';
 
-	/** @var array Replaced field aliases */
-	protected $replaced_aliases;
+	/**
+	 * @var string Обработанный блок ORDER
+	 */
+	protected $sqlOrder = '';
 
-	/** @var array Replaced table aliases */
-	protected $replaced_taliases;
+	/**
+	 * @var string Обработанный блок LIMIT
+	 */
+	protected $sqlLimit = '';
 
-	protected
-		$sqlSelect = '',
-		$sqlFrom = '',
-		$sqlWhere = '',
-		$sqlOrder = '',
-		$sqlLimit = '';
+	/**
+	 * @var array Обработанный массив FROM
+	 */
+	protected $arSqlFrom=array();
 
-	protected
-		$arSqlSelect=array(),
-		$arSqlFrom=array(),
-		$arSqlWhere=array(),
-		$arSqlOrder=array();
+	/**
+	 * @var array Обработанный массив WHERE
+	 */
+	protected $arSqlWhere=array();
 
+	/**
+	 * @var array Массив сущностей полей таблицы
+	 */
 	protected $arFieldsEntity = array();
 
+	//protected $arSqlSelect=array();
+	//protected $arSqlOrder=array();
+	/**
+	 * Временно не используется
+	 * @var null
+	 */
+	protected $count_total = null;
+
+	/**
+	 * Временно не используется
+	 * @var null
+	 */
+	protected $runtime = null;
+
+	/**
+	 * Временно не используется
+	 * @var array Необработанный массив параметра having
+	 */
+	protected $having = array();
+
+	/**
+	 * Временно не используется
+	 * @var array
+	 */
+	protected $join_map = array();
+
+	/**
+	 * Временно не используется
+	 * @var array list of used joins
+	 */
+	protected $join_registry;
+
+	/**
+	 * Временно не используется
+	 * @var string Last executed SQL query
+	 */
+	protected static $last_query;
+
+	/**
+	 * Временно не используется
+	 * @var array Replaced field aliases
+	 */
+	protected $replaced_aliases;
+
+	/**
+	 * Временно не используется
+	 * @var array Replaced table aliases
+	 */
+	protected $replaced_taliases;
+
+
+
+	/**
+	 * Конструктор. Создает объект query запроса указанного типа: (select|create|insert|update|delete|drop)
+	 *
+	 * @param string $type
+	 */
 	public function __construct($type)
 	{
 		$this->setType($type);
 	}
 
+	/**
+	 * Возвращает массив сущностей полей таблицы
+	 *
+	 * @return array
+	 */
 	public function getFieldsEntity ()
 	{
 		return $this->arFieldsEntity;
@@ -100,7 +281,7 @@ class Query
 	 *
 	 * @param string $type
 	 */
-	private function setType ($type)
+	protected function setType ($type)
 	{
 		$this->type = $type;
 	}
@@ -133,7 +314,7 @@ class Query
 	 *
 	 * @return array $this->select
 	 */
-	private function getSelect ()
+	protected function getSelect ()
 	{
 		return $this->select;
 	}
@@ -153,12 +334,17 @@ class Query
 	 *
 	 * @return null|string $this->table_name
 	 */
-	private function getTableName ()
+	protected function getTableName ()
 	{
 		return $this->table_name;
 	}
 
-	private function getTableTitle()
+	/**
+	 * Возвращает комментарий таблицы DB
+	 *
+	 * @return mixed
+	 */
+	protected function getTableTitle()
 	{
 		$tableName = $this->table_name;
 		$tableName = str_replace("ms_","",$tableName);
@@ -206,7 +392,7 @@ class Query
 	 *
 	 * @return null|string $this->primary_key
 	 */
-	private function getPrimaryKey ()
+	protected function getPrimaryKey ()
 	{
 		return $this->primary_key;
 	}
@@ -231,6 +417,11 @@ class Query
 		return $this->table_map;
 	}
 
+	/**
+	 * Задает необработанный массив параметра filter
+	 *
+	 * @param $filter
+	 */
 	public function setFilter ($filter)
 	{
 		if (!is_array($filter))
@@ -239,22 +430,42 @@ class Query
 			$this->filter = $filter;
 	}
 
-	private function getFilter ()
+	/**
+	 * Возвращает необработанный массив параметра filter
+	 *
+	 * @return array
+	 */
+	protected function getFilter ()
 	{
 		return $this->filter;
 	}
 
-	public function setFilterLogic ($logic="AND")
+	/**
+	 * Устанавливает логику работы фильтра
+	 *
+	 * @param string $logic
+	 */
+	protected function setFilterLogic ($logic="AND")
 	{
 		if ($logic != "AND" && $logic != "OR") $logic="AND";
 		$this->filter_logic = $logic;
 	}
 
-	private function getFilterLogic ()
+	/**
+	 * Возвращает логику работы фильтра
+	 *
+	 * @return string
+	 */
+	protected function getFilterLogic ()
 	{
 		return $this->filter_logic;
 	}
 
+	/**
+	 * Устанавливает значение в необработанный массив параметра where
+	 *
+	 * @param array $where
+	 */
 	public function setWhere ($where=array())
 	{
 		if (empty($where))
@@ -263,11 +474,21 @@ class Query
 			$this->where = $where;
 	}
 
-	private function getWhere ()
+	/**
+	 * Возвращает необработанный массив параметра where
+	 *
+	 * @return array
+	 */
+	protected function getWhere ()
 	{
 		return $this->where;
 	}
 
+	/**
+	 * Устанавливает значение в необработанный массив параметра group
+	 *
+	 * @param $group
+	 */
 	public function setGroup ($group)
 	{
 		if (!is_array($group))
@@ -276,11 +497,22 @@ class Query
 			$this->group = $group;
 	}
 
-	private function getGroup ()
+	/**
+	 * Возвращает необработанный массив параметра order
+	 *
+	 * @return array
+	 */
+	protected function getGroup ()
 	{
 		return $this->group;
 	}
 
+	/**
+	 * Устанавливает значение в необработанный массив параметра order
+	 *
+	 * @param        $order
+	 * @param string $by
+	 */
 	public function setOrder ($order, $by = "ASC")
 	{
 		if (!is_array($order))
@@ -304,131 +536,265 @@ class Query
 		}
 	}
 
+	/**
+	 * Возвращает необработанный массив параметра order
+	 *
+	 * @return array
+	 */
 	public function getOrder ()
 	{
 		return $this->order;
 	}
 
+	/**
+	 * Устанавливает значение лимита записей
+	 *
+	 * @param $limit
+	 */
 	public function setLimit ($limit)
 	{
 		$this->limit = $limit;
 	}
 
-	private function getLimit ()
+	/**
+	 * Возвращает значение лимита записей
+	 *
+	 * @return null
+	 */
+	protected function getLimit ()
 	{
 		return $this->limit;
 	}
 
+	/**
+	 * Устанавливает сдвиг получения записей
+	 *
+	 * @param $offset
+	 */
 	public function setOffset ($offset)
 	{
 		$this->offset = $offset;
 	}
 
-	private function getOffset ()
+	/**
+	 * Возвращает сдвиг получения записей
+	 *
+	 * @return null
+	 */
+	protected function getOffset ()
 	{
 		return $this->offset;
 	}
 
+	/**
+	 * Временно не используется
+	 *
+	 * @param $runtime
+	 */
 	public function setRuntime ($runtime)
 	{
 		$this->runtime = $runtime;
 	}
 
-	private function getRuntime ()
+	/**
+	 * Временно не используется
+	 *
+	 * @return null
+	 */
+	protected function getRuntime ()
 	{
 		return $this->runtime;
 	}
 
+	/**
+	 * Устанавливает собранный SQL запрос
+	 *
+	 * @param $sql
+	 */
 	public function setQueryBuildParts ($sql)
 	{
 		$this->query_build_parts = $sql;
 	}
 
+	/**
+	 * Возвращает собранный SQL запрос
+	 *
+	 * @return string
+	 */
 	public function getQueryBuildParts ()
 	{
 		return $this->query_build_parts;
 	}
 
+	/**
+	 * Устанавливает массив значений для INSERT запроса
+	 *
+	 * @param $array
+	 */
 	private function setInsertArray ($array)
 	{
 		$this->insertArray = $array;
 	}
 
+	/**
+	 * Возвращает массив значений для INSERT запроса
+	 *
+	 * @return array
+	 */
 	private function getInsertArray ()
 	{
 		return $this->insertArray;
 	}
 
+	/**
+	 * Задает значение AUTO_INCREMENT для таблицы
+	 *
+	 * @param $autoI
+	 */
 	private function setAutoIncrement ($autoI)
 	{
 		$this->autoIncrement = $autoI;
 	}
 
+	/**
+	 * Возвращает значение AUTO_INCREMENT для таблицы
+	 *
+	 * @return int
+	 */
 	private function getAutoIncrement ()
 	{
 		return $this->autoIncrement;
 	}
 
-	public function setTableAliasPostfix ($alias)
+	/**
+	 * Задает алиас таблицы
+	 *
+	 * @param $alias
+	 */
+	protected function setTableAliasPostfix ($alias)
 	{
 		$this->table_alias_postfix = $alias;
 	}
 
-	private function getTableAliasPostfix ()
+	/**
+	 * Возвращает алиас таблицы
+	 *
+	 * @return string
+	 */
+	protected function getTableAliasPostfix ()
 	{
 		return $this->table_alias_postfix;
 	}
 
-	private function setUpdateArray($array)
+	/**
+	 * Задает массив значений для UPDATE запроса
+	 *
+	 * @param $array
+	 */
+	protected function setUpdateArray($array)
 	{
 		$this->updateArray = $array;
 	}
 
-	private function getUpdateArray()
+	/**
+	 * Возвращает массив значений для UPDATE запроса
+	 *
+	 * @return array
+	 */
+	protected function getUpdateArray()
 	{
 		return $this->updateArray;
 	}
 
-	private function setUpdatePrimary ($primary)
+	/**
+	 * Задает поле PRIMARY для UPDATE запроса
+	 *
+	 * @param $primary
+	 */
+	protected function setUpdatePrimary ($primary)
 	{
 		$this->updatePrimary = $primary;
 	}
 
-	private function getUpdatePrimary ()
+	/**
+	 * Возвращает поле PRIMARY для UPDATE запроса
+	 *
+	 * @return string
+	 */
+	protected function getUpdatePrimary ()
 	{
 		return $this->updatePrimary;
 	}
 
-	private function setDeletePrimary ($primary)
+	/**
+	 * Задает поле PRIMARY для DELETE запроса
+	 *
+	 * @param $primary
+	 */
+	protected function setDeletePrimary ($primary)
 	{
 		$this->deletePrimary = $primary;
 	}
 
-	private function getDeletePrimary ()
+	/**
+	 * Возвращает поле PRIMARY для DELETE запроса
+	 *
+	 * @return string
+	 */
+	protected function getDeletePrimary ()
 	{
 		return $this->deletePrimary;
 	}
 
-	private function setDeleteConfirm ($confirm=false)
+	/**
+	 * Задает флаг подтверждения удаления зависимых полей
+	 *
+	 * @param bool $confirm
+	 */
+	protected function setDeleteConfirm ($confirm=false)
 	{
 		$this->deleteConfirm = $confirm;
 	}
 
-	private function getDeleteConfirm ()
+	/**
+	 * Возвращает флаг подтверждения удаления зависимых полей
+	 *
+	 * @return bool
+	 */
+	protected function getDeleteConfirm ()
 	{
 		return $this->deleteConfirm;
 	}
 
-	private function setTableLinks ($arLinks)
+	/**
+	 * Задает массив связей с полями таблицы
+	 *
+	 * @param $arLinks
+	 */
+	protected function setTableLinks ($arLinks)
 	{
 		$this->tableLinks = $arLinks;
 	}
 
-	private function getTableLinks ()
+	/**
+	 * Возвращает массив связей с полями таблицы
+	 *
+	 * @return array
+	 */
+	protected function getTableLinks ()
 	{
 		return $this->tableLinks;
 	}
 
+	/**
+	 * Заполняет все необходимые параметры для INSERT запроса
+	 *
+	 * @api
+	 *
+	 * @param array     $insertArray    Массив добавляемый полей => значений
+	 * @param string    $tableName      Название таблицы
+	 * @param array     $tableMapArray  Массив сущностей полей таблицы
+	 */
 	public function setInsertParams($insertArray=null,$tableName=null,$tableMapArray=null)
 	{
 		if (!is_null($insertArray))
@@ -452,6 +818,16 @@ class Query
 		}
 	}
 
+	/**
+	 * Заполняет все необходимые параметры для UPDATE запроса
+	 *
+	 * @api
+	 *
+	 * @param array     $updateArray    Массив обновляемых полей => значений
+	 * @param mixed     $updatePrimary  Значение поля PRIMARY обновляемой записи
+	 * @param string    $tableName      Название таблицы
+	 * @param array     $tableMapArray  Массив сущностей полей таблицы
+	 */
 	public function setUpdateParams ($updateArray=null,$updatePrimary=null,$tableName=null,$tableMapArray=null)
 	{
 		if (!is_null($updateArray))
@@ -472,6 +848,17 @@ class Query
 		}
 	}
 
+	/**
+	 * Заполняет все необходимые параметры для DELETE запроса
+	 *
+	 * @api
+	 *
+	 * @param mixed     $deletePrimary  Значение поля PRIMARY удаляемой записи
+	 * @param bool      $deleteConfirm  Флаг, подтверждающий удаление связанных записей
+	 * @param string    $tableName      Название таблицы
+	 * @param array     $tableMapArray  Массив сущностей полей таблицы
+	 * @param array     $tableLinks     Массив связей полей таблицы с другими таблицами
+	 */
 	public function setDeleteParams ($deletePrimary=null,$deleteConfirm=null,$tableName=null,$tableMapArray=null,$tableLinks=null)
 	{
 		if (!is_null($deletePrimary))
@@ -496,6 +883,15 @@ class Query
 		}
 	}
 
+	/**
+	 * Заполняет все необходимые параметры для CREATE запроса
+	 *
+	 * @api
+	 *
+	 * @param int|null  $autoIncrement  Значение AUTO_INCREMENT для таблицы
+	 * @param string    $tableName      Название таблицы
+	 * @param array     $arMapArray     Массив сущностей полей таблицы
+	 */
 	public function setCreateParams ($autoIncrement=null,$tableName=null,$arMapArray=null)
 	{
 		if (!is_null($autoIncrement))
@@ -515,15 +911,19 @@ class Query
 	/**
 	 * Выполняет SQL запрос Query
 	 *
+	 * @api
+	 *
+	 * @param bool $debug Включен ли режим отладки. Если true, функция просто возвращает собранный SQL запрос
+	 *
 	 * @throw Exception\SqlQueryException
 	 *
-	 * @return Lib\DBResult $res
+	 * @return Lib\DBResult $res Возвращает объект типа DBResult
 	 */
 	public function exec ($debug=false)
 	{
 		if ($this->getQueryBuildParts() == '')
 		{
-			$this->setQueryBuildParts(static::BuildQuery());
+			$this->setQueryBuildParts($this->BuildQuery());
 		}
 		if ($debug)
 		{
@@ -549,6 +949,12 @@ class Query
 		}
 	}
 
+	/**
+	 * Определяет обработчик, который будет собирать SQL запрос.
+	 * Обработчик зависит от типа Query (select|create|insert|update|delete)
+	 *
+	 * @return bool|string SQL запрос, либо false
+	 */
 	private function BuildQuery ()
 	{
 		try
@@ -585,6 +991,11 @@ class Query
 		return $sql;
 	}
 
+	/**
+	 * Собирает блок SELECT SQL запроса
+	 *
+	 * @return string SQL запрос
+	 */
 	private function CreateSqlSelect ()
 	{
 		$helper = new Lib\SqlHelper();
@@ -820,6 +1231,11 @@ class Query
 		return $sqlSelect."\n";
 	}
 
+	/**
+	 * Собирает блок FROM SQL запроса
+	 *
+	 * @return string
+	 */
 	private function CreateSqlFrom ()
 	{
 		$sqlFrom = "FROM\n\t";
@@ -858,6 +1274,11 @@ class Query
 		return $sqlFrom."\n";
 	}
 
+	/**
+	 * Собирает блок WHERE SQL запроса
+	 *
+	 * @return string
+	 */
 	private function CreateSqlWhere ()
 	{
 		$sqlWhere = "WHERE\n\t";
@@ -892,7 +1313,9 @@ class Query
 					{
 						if (!is_array($value))
 						{
-							$value = $arMap[$field]->saveDataModification($value);
+							//$value = $arMap[$field]->saveDataModification($value);
+							$fieldClassName = $arMap[$field]->getClassName();
+							$value = $fieldClassName::saveDataModification($value,$arMap[$field]);
 						}
 						$bEquating_str = false;
 
@@ -1202,13 +1625,19 @@ class Query
 		return $sqlWhere;
 	}
 
+	/**
+	 * Собирает блок GROUP SQL запроса
+	 *
+	 * @return string
+	 */
 	private function CreateSqlGroup ()
 	{
 		$sqlGroup = "";
 		$helper = new Lib\SqlHelper();
 		$arGroup = $this->getGroup();
-		if (!empty($arGroup)) {
-			//TODO: Доделать
+		if (!empty($arGroup))
+		{
+			//TODO: Доделать (вспомнить бы только, что доделать)
 			$sqlGroup .= "GROUP BY\n\t";
 			$bFirst = true;
 			foreach ($arGroup as $groupField=>$sort)
@@ -1229,6 +1658,11 @@ class Query
 		return $sqlGroup;
 	}
 
+	/**
+	 * Собирает блок ORDER SQL запроса
+	 *
+	 * @return string
+	 */
 	private function CreateSqlOrder ()
 	{
 		$sqlOrder = "";
@@ -1264,6 +1698,11 @@ class Query
 		return $sqlOrder;
 	}
 
+	/**
+	 * Собирает блок LIMIT SQL запроса
+	 *
+	 * @return string
+	 */
 	private function CreateSqlLimit ()
 	{
 		$sqlLimit = "";
@@ -1281,6 +1720,11 @@ class Query
 		return $sqlLimit;
 	}
 
+	/**
+	 * Создает SQL запрос типа "select"
+	 *
+	 * @return string
+	 */
 	private function BuildQuerySelect ()
 	{
 		$sql = "";
@@ -1306,6 +1750,7 @@ class Query
 	}
 
 	/**
+	 * Создает SQL запрос типа "create"
 	 *
 	 * @throw Exception\ArgumentNullException
 	 *
@@ -1419,6 +1864,11 @@ class Query
 		return $sql;
 	}
 
+	/**
+	 * Создает SQL запрос типа "insert"
+	 *
+	 * @return string
+	 */
 	private function BuildQueryInsert ()
 	{
 		$helper = new Lib\SqlHelper ();
@@ -1457,14 +1907,18 @@ class Query
 						|| $obMap instanceof FloatField
 					)
 					{
-						$arValue[$fieldName] = $obMap->saveDataModification($arValue[$fieldName]);
+						$fieldClassName = $obMap->getClassName();
+						//$arValue[$fieldName] = $obMap->saveDataModification($arValue[$fieldName]);
+						$arValue[$fieldName] = $fieldClassName::saveDataModification($arValue[$fieldName],$obMap);
 						//$sqlValues .= $arValue[$fieldName];
 						$sqlValues .= "'".$arValue[$fieldName]."'";
 						$sqlNames .= $helper->wrapQuotes($columnName);
 					}
 					else
 					{
-						$arValue[$fieldName] = $obMap->saveDataModification($arValue[$fieldName]);
+						$fieldClassName = $obMap->getClassName();
+						//$arValue[$fieldName] = $obMap->saveDataModification($arValue[$fieldName]);
+						$arValue[$fieldName] = $fieldClassName::saveDataModification($arValue[$fieldName],$obMap);
 						$sqlValues .= "'".$arValue[$fieldName]."'";
 						$sqlNames .= $helper->wrapQuotes($columnName);
 					}
@@ -1523,7 +1977,9 @@ class Query
 						elseif (!is_null($obMap->getDefaultValue()))
 						{
 							$value = $obMap->getDefaultValue();
-							$value = $obMap->saveDataModification($value);
+							$fieldClassName = $obMap->getClassName();
+							//$value = $obMap->saveDataModification($value);
+							$value = $fieldClassName::saveDataModification($value,$obMap);
 							if (
 								$obMap instanceof IntegerField
 								|| $obMap instanceof FloatField
@@ -1568,6 +2024,11 @@ class Query
 
 	}
 
+	/**
+	 * Создает SQL запрос типа "update"
+	 *
+	 * @return string
+	 */
 	private function BuildQueryUpdate ()
 	{
 		$helper = new Lib\SqlHelper();
@@ -1618,7 +2079,9 @@ class Query
 					}
 					$sql .= "\t".$helper->wrapQuotes($columnName)." = '";
 
-					$value = $arMap[$field]->saveDataModification($value);
+					$fieldClassName = $arMap[$field]->getClassName();
+					//$value = $arMap[$field]->saveDataModification($value);
+					$value = $fieldClassName::saveDataModification($value,$arMap[$field]);
 					$sql .= $value;
 
 					$sql .= "'";
@@ -1649,6 +2112,11 @@ class Query
 		return $sql;
 	}
 
+	/**
+	 * Создает SQL запрос типа "delete"
+	 *
+	 * @return bool|string
+	 */
 	private function BuildQueryDelete ()
 	{
 		$helper = new Lib\SqlHelper();
@@ -1685,12 +2153,12 @@ class Query
 		}
 		elseif ($confirm)
 		{
-			static::sqlMassDelete($this);
+			$this->sqlMassDelete();
 			return false;
 		}
 		else
 		{
-			$bCanDelete = static::checkCanDelete($this);
+			$bCanDelete = $this->checkCanDelete();
 
 			if ($bCanDelete)
 			{
@@ -1704,26 +2172,17 @@ class Query
 	}
 
 	//TODO: Протестировать
-	private function sqlMassDelete ($query=null)
+	/**
+	 * Функция массового удаления записи и всех связанных с ней записей
+	 *
+	 */
+	private function sqlMassDelete ()
 	{
-		try
-		{
-			if (is_null($query))
-			{
-				throw new Exception\ArgumentNullException('query');
-			}
-		}
-		catch (Exception\ArgumentNullException $e)
-		{
-			$e->showException();
-			return false;
-		}
-
 		$helper = new Lib\SqlHelper();
-		$arMap = $query->getTableMap();
-		$primaryId = $query->getDeletePrimary();
-		$arTableLinks = $query->getTableLinks();
-		$tableName = $query->getTableName();
+		$arMap = $this->getTableMap();
+		$primaryId = $this->getDeletePrimary();
+		$arTableLinks = $this->getTableLinks();
+		$tableName = $this->getTableName();
 
 		foreach ($arTableLinks as $field=>$arLinked)
 		{
@@ -1816,23 +2275,15 @@ class Query
 	}
 
 	//TODO: Протестировать
-	private function checkCanDelete($query=null)
+	/**
+	 * Функция проверки возможности удаления записи. Проверяет нет ли записей, связанных с удаляемой
+	 *
+	 * @return bool
+	 */
+	private function checkCanDelete()
 	{
-		try
-		{
-			if (is_null($query))
-			{
-				throw new Exception\ArgumentNullException('query');
-			}
-		}
-		catch (Exception\ArgumentNullException $e)
-		{
-			$e->showException();
-			return false;
-		}
-
-		$primaryId = $query->getDeletePrimary();
-		$arTableLinks = $query->getTableLinks();
+		$primaryId = $this->getDeletePrimary();
+		$arTableLinks = $this->getTableLinks();
 		$bCanDelete = true;
 
 		foreach ($arTableLinks as $field=>$arLinked)
@@ -1878,6 +2329,13 @@ class Query
 		return $bCanDelete;
 	}
 
+	/**
+	 * Функция разбирает маску поля на действие и название поля
+	 *
+	 * @param string $field
+	 *
+	 * @return array|bool
+	 */
 	private function maskField ($field=null)
 	{
 		static $triple_char = array(

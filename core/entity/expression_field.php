@@ -1,13 +1,23 @@
 <?php
 /**
- * MSergeev
- * @package core
- * @author Mikhail Sergeev
+ * MSergeev\Core\Entity\ExpressionField
+ * Сущность поля базы данных, содержащего выражение
+ *
+ * Временно не используется
+ *
+ * @package MSergeev\Core
+ * @subpackage Entity
+ * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
 
 namespace MSergeev\Core\Entity;
 
+/**
+ * Class ExpressionField
+ * @package MSergeev\Core\Entity
+ * @deprecated
+ */
 class ExpressionField extends ScalarField {
 	/**
 	 * @var string

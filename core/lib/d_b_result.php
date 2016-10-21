@@ -138,7 +138,9 @@ class DBResult
 					{
 						if (isset($this->arFieldsEntity[$k]))
 						{
-							$v = $this->arFieldsEntity[$k]->fetchDataModification($v);
+							$fieldClassName = $this->arFieldsEntity[$k]->getClassName();
+							//$v = $this->arFieldsEntity[$k]->fetchDataModification($v);
+							$v = $fieldClassName::fetchDataModification($v,$this->arFieldsEntity[$k]);
 						}
 					}
 					$arResult[$k] = $v;

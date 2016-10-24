@@ -11,11 +11,20 @@
 
 namespace MSergeev\Core\Lib;
 
+/**
+ * Class SqlHelperMath
+ * @package MSergeev\Core\Lib
+ * @extends SqlHelper
+ *
+ * @var string $tableName Имя таблицы
+ */
 class SqlHelperMath extends SqlHelper
 {
-	function __construct ()
-	{
+	protected $tableName='';
 
+	function __construct ($tableName='')
+	{
+		$this->tableName = $tableName;
 	}
 
 	// Математические функции

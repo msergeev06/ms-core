@@ -13,11 +13,20 @@ namespace MSergeev\Core\Lib;
 
 use MSergeev\Core\Exception;
 
+/**
+ * Class SqlHelperDate
+ * @package MSergeev\Core\Lib
+ * @extends SqlHelper
+ *
+ * @var string $tableName   Имя таблицы
+ */
 class SqlHelperDate extends SqlHelper
 {
-	function __construct ()
+	protected $tableName='';
+
+	function __construct ($tableName='')
 	{
-		parent::__construct();
+		$this->tableName = $tableName;
 	}
 
 	/**

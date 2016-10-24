@@ -105,6 +105,24 @@ class Loc
 	}
 
 	/**
+	 * Функция обертка для getMessage для пакетов.
+	 * Собирает код текстового сообщения из префикса, названия пакета и кода сообщения
+	 *
+	 * @api
+	 *
+	 * @param string $pack      Имя пакета
+	 * @param string $name      Код локализованной фразы
+	 * @param array  $arReplace Массив замен
+	 * @param string $prefix    Префикс
+	 *
+	 * @return mixed
+	 */
+	public static function getPackMessage ($pack,$name,$arReplace=array(),$prefix='ms_')
+	{
+		return self::getMessage($prefix.$pack.'_'.$name,$arReplace);
+	}
+
+	/**
 	 * Возвращает массив, содержащий все локализованнты тексты указанного пакета
 	 *
 	 * @api

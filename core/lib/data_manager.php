@@ -452,6 +452,10 @@ class DataManager {
 			static::getMapArray()
 		);
 		$res = $query->exec();
+		if ($res->getResult())
+		{
+			static::OnAfterCreateTable();
+		}
 
 		return $res;
 	}
@@ -530,5 +534,7 @@ class DataManager {
 
 		return $bLinks;
 	}
+
+	public static function OnAfterCreateTable (){}
 
 }

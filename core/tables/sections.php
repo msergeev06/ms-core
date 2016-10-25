@@ -66,4 +66,32 @@ class SectionsTable extends Lib\DataManager
 			))
 		);
 	}
+
+	/**
+	 * Добавляет индекс в таблицу
+	 * Функция запускается автоматически после создания таблицы.
+	 *
+	 * @return bool|void
+	 */
+	public static function OnAfterCreateTable()
+	{
+		$sqlHelper = new Lib\SqlHelper(self::getTableName());
+		$sql = "CREATE INDEX "
+			.$sqlHelper->wrapQuotes('LEFT_MARGIN')." ON "
+			.$sqlHelper->wrapTableQuotes()." ("
+			.$sqlHelper->wrapQuotes('LEFT_MARGIN').", "
+			.$sqlHelper->wrapQuotes('RIGHT_MARGIN').", "
+			.$sqlHelper->wrapQuotes('DEPTH_LEVEL').")";
+		$query = new Entity\Query('create');
+		$query->setQueryBuildParts($sql);
+		$res = $query->exec();
+		if ($res->getResult())
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 }

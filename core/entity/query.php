@@ -1283,9 +1283,9 @@ class Query
 	{
 		$sqlWhere = "WHERE\n\t";
 
-		$helper = new Lib\SqlHelper();
 		$tableName = $this->getTableName();
 		$arWhere = $this->getWhere();
+		$helper = new Lib\SqlHelper($tableName);
 		//msDebug($arWhere);
 
 		if (!empty($arWhere))
@@ -1311,279 +1311,285 @@ class Query
 					}
 					else
 					{
-						if (!is_array($value))
+						$bEquating_str = FALSE;
+						$bValueField = false;
+						$equating = ' = ';
+						if (!is_array($value) && strpos($value,'FIELD_')!==false)
 						{
-							//$value = $arMap[$field]->saveDataModification($value);
-							$fieldClassName = $arMap[$field]->getClassName();
-							$value = $fieldClassName::saveDataModification($value,$arMap[$field]);
-						}
-						$bEquating_str = false;
 
-						if ($arMap[$field] instanceof IntegerField)
-						{
-							if (isset($mask))
-							{
-								if (!is_array($value))
-								{
-									$equating = ' '.$mask.' ';
-								}
-								elseif ($mask == "!")
-								{
-									$equating = ' NOT IN ';
-								}
-								else
-								{
-									throw new Exception\ArgumentOutOfRangeException('arMap['.$oldField.']');
-								}
-							}
-							else
-							{
-								if (!is_array($value))
-								{
-									$equating = " = ";
-								}
-								else
-								{
-									$equating = ' IN ';
-								}
-							}
-						}
-						elseif ($arMap[$field] instanceof BooleanField)
-						{
 							if (isset($mask))
 							{
 								$equating = ' '.$mask.' ';
 							}
 							else
 							{
-								$equating = " LIKE ";
+								$equating = ' = ';
 							}
-							$bEquating_str = true;
-						}
-						elseif ($arMap[$field] instanceof DateField)
-						{
-							if (isset($mask))
-							{
-								if (!is_array($value))
-								{
-									$equating = ' '.$mask.' ';
-								}
-								elseif ($mask == "!")
-								{
-									$equating = ' NOT IN ';
-								}
-								else
-								{
-									throw new Exception\ArgumentOutOfRangeException('arMap['.$oldField.']');
-								}
-							}
-							else
-							{
-								if (!is_array($value))
-								{
-									$equating = " = ";
-								}
-								else
-								{
-									$equating = ' IN ';
-								}
-							}
-							$bEquating_str = true;
-						}
-						elseif ($arMap[$field] instanceof DatetimeField)
-						{
-							if (isset($mask))
-							{
-								if (!is_array($value))
-								{
-									$equating = ' '.$mask.' ';
-								}
-								elseif ($mask == "!")
-								{
-									$equating = ' NOT IN ';
-								}
-								else
-								{
-									throw new Exception\ArgumentOutOfRangeException('arMap['.$oldField.']');
-								}
-							}
-							else
-							{
-								if (!is_array($value))
-								{
-									$equating = " = ";
-								}
-								else
-								{
-									$equating = ' IN ';
-								}
-							}
-							$bEquating_str = true;
-						}
-						elseif ($arMap[$field] instanceof EnumField)
-						{
-							if (isset($mask))
-							{
-								$equating = ' '.$mask.' ';
-							}
-							else
-							{
-								$equating = " = ";
-							}
-							//TODO: Доделать
-						}
-						elseif ($arMap[$field] instanceof ExpressionField)
-						{
-							if (isset($mask))
-							{
-								$equating = ' '.$mask.' ';
-							}
-							else
-							{
-								$equating = " = ";
-							}
-							//TODO: Доделать
-						}
-						elseif ($arMap[$field] instanceof FloatField)
-						{
-							if (isset($mask))
-							{
-								if (!is_array($value))
-								{
-									$equating = ' '.$mask.' ';
-								}
-								elseif ($mask == "!")
-								{
-									$equating = ' NOT IN ';
-								}
-								else
-								{
-									throw new Exception\ArgumentOutOfRangeException('arMap['.$oldField.']');
-								}
-							}
-							else
-							{
-								if (!is_array($value))
-								{
-									$equating = " = ";
-								}
-								else
-								{
-									$equating = ' IN ';
-								}
-							}
-						}
-						elseif ($arMap[$field] instanceof ReferenceField)
-						{
-							if (isset($mask))
-							{
-								$equating = ' '.$mask.' ';
-							}
-							else
-							{
-								$equating = " = ";
-							}
-							//TODO: Доделать
-						}
-						elseif ($arMap[$field] instanceof StringField)
-						{
-							if (isset($mask))
-							{
-								$equating = ' '.$mask.' ';
-							}
-							else
-							{
-								$equating = " LIKE ";
-							}
-							$bEquating_str = true;
-						}
-						elseif ($arMap[$field] instanceof TextField)
-						{
-							if (isset($mask))
-							{
-								$equating = ' '.$mask.' ';
-							}
-							else
-							{
-								$equating = " LIKE ";
-							}
-							$bEquating_str = true;
-						}
-
-						if (!is_array($value))
-						{
-							if ($bFirst)
-							{
-								$sqlWhere .= $helper->wrapQuotes($tableName).'.'
-									.$helper->wrapQuotes($field).$equating;
-								if ($bEquating_str)
-									$sqlWhere .= "'".$value."'";
-								else
-									$sqlWhere .= $value;
-								$bFirst = false;
-							}
-							else
-							{
-								$sqlWhere .= ' '.$this->getFilterLogic()."\n\t"
-									.$helper->wrapQuotes($tableName).'.'
-									.$helper->wrapQuotes($field).$equating;
-								if ($bEquating_str)
-									$sqlWhere .= "'".$value."'";
-								else
-									$sqlWhere .= $value;
-							}
+							$bValueField = true;
+							$value = str_replace('FIELD_','',$value);
 						}
 						else
 						{
+							if (!is_array ($value))
+							{
+								$fieldClassName = $arMap[$field]->getClassName ();
+								$value = $fieldClassName::saveDataModification ($value, $arMap[$field]);
+							}
+
+							if ($arMap[$field] instanceof IntegerField)
+							{
+								if (isset($mask))
+								{
+									if (!is_array ($value))
+									{
+										$equating = ' '.$mask.' ';
+									} elseif ($mask == "!")
+									{
+										$equating = ' NOT IN ';
+									} else
+									{
+										throw new Exception\ArgumentOutOfRangeException('arMap['.$oldField.']');
+									}
+								} else
+								{
+									if (!is_array ($value))
+									{
+										$equating = " = ";
+									} else
+									{
+										$equating = ' IN ';
+									}
+								}
+							} elseif ($arMap[$field] instanceof BooleanField)
+							{
+								if (isset($mask))
+								{
+									$equating = ' '.$mask.' ';
+								} else
+								{
+									$equating = " LIKE ";
+								}
+								$bEquating_str = TRUE;
+							} elseif ($arMap[$field] instanceof DateField)
+							{
+								if (isset($mask))
+								{
+									if (!is_array ($value))
+									{
+										$equating = ' '.$mask.' ';
+									} elseif ($mask == "!")
+									{
+										$equating = ' NOT IN ';
+									} else
+									{
+										throw new Exception\ArgumentOutOfRangeException('arMap['.$oldField.']');
+									}
+								} else
+								{
+									if (!is_array ($value))
+									{
+										$equating = " = ";
+									} else
+									{
+										$equating = ' IN ';
+									}
+								}
+								$bEquating_str = TRUE;
+							} elseif ($arMap[$field] instanceof DatetimeField)
+							{
+								if (isset($mask))
+								{
+									if (!is_array ($value))
+									{
+										$equating = ' '.$mask.' ';
+									} elseif ($mask == "!")
+									{
+										$equating = ' NOT IN ';
+									} else
+									{
+										throw new Exception\ArgumentOutOfRangeException('arMap['.$oldField.']');
+									}
+								} else
+								{
+									if (!is_array ($value))
+									{
+										$equating = " = ";
+									} else
+									{
+										$equating = ' IN ';
+									}
+								}
+								$bEquating_str = TRUE;
+							} elseif ($arMap[$field] instanceof EnumField)
+							{
+								if (isset($mask))
+								{
+									$equating = ' '.$mask.' ';
+								} else
+								{
+									$equating = " = ";
+								}
+								//TODO: Доделать
+							} elseif ($arMap[$field] instanceof ExpressionField)
+							{
+								if (isset($mask))
+								{
+									$equating = ' '.$mask.' ';
+								} else
+								{
+									$equating = " = ";
+								}
+								//TODO: Доделать
+							} elseif ($arMap[$field] instanceof FloatField)
+							{
+								if (isset($mask))
+								{
+									if (!is_array ($value))
+									{
+										$equating = ' '.$mask.' ';
+									} elseif ($mask == "!")
+									{
+										$equating = ' NOT IN ';
+									} else
+									{
+										throw new Exception\ArgumentOutOfRangeException('arMap['.$oldField.']');
+									}
+								} else
+								{
+									if (!is_array ($value))
+									{
+										$equating = " = ";
+									} else
+									{
+										$equating = ' IN ';
+									}
+								}
+							} elseif ($arMap[$field] instanceof ReferenceField)
+							{
+								if (isset($mask))
+								{
+									$equating = ' '.$mask.' ';
+								} else
+								{
+									$equating = " = ";
+								}
+								//TODO: Доделать
+							} elseif ($arMap[$field] instanceof StringField)
+							{
+								if (isset($mask))
+								{
+									$equating = ' '.$mask.' ';
+								} else
+								{
+									$equating = " LIKE ";
+								}
+								$bEquating_str = TRUE;
+							} elseif ($arMap[$field] instanceof TextField)
+							{
+								if (isset($mask))
+								{
+									$equating = ' '.$mask.' ';
+								} else
+								{
+									$equating = " LIKE ";
+								}
+								$bEquating_str = TRUE;
+							}
+						}
+
+						if (!is_array ($value))
+						{
 							if ($bFirst)
 							{
-								$sqlWhere .= $helper->wrapQuotes($tableName).'.'
-									.$helper->wrapQuotes($field).$equating;
+								$sqlWhere .= $helper->wrapFieldQuotes($field).$equating;
+								if ($bValueField)
+								{
+									$sqlWhere .= $helper->wrapFieldQuotes($value);
+								}
+								else
+								{
+									if ($bEquating_str)
+									{
+										$sqlWhere .= "'".$value."'";
+									} else
+									{
+										$sqlWhere .= $value;
+									}
+								}
+								$bFirst = FALSE;
+							} else
+							{
+								$sqlWhere .= ' '.$this->getFilterLogic ()."\n\t"
+									.$helper->wrapFieldQuotes($field).$equating;
+								if ($bValueField)
+								{
+									$sqlWhere .= $helper->wrapFieldQuotes($value);
+								}
+								else
+								{
+									if ($bEquating_str)
+									{
+										$sqlWhere .= "'".$value."'";
+									} else
+									{
+										$sqlWhere .= $value;
+									}
+								}
+							}
+						} else
+						{
+							//TODO: Посмотреть, как ведет себя, если значение это массив
+							if ($bFirst)
+							{
+								$sqlWhere .= $helper->wrapFieldQuotes($field).$equating;
 								$sqlWhere .= '(';
-								$bFFirst = true;
-								for ($i=0; $i<count($value); $i++)
+								$bFFirst = TRUE;
+								for ($i = 0; $i < count ($value); $i++)
 								{
 									if ($bFFirst)
 									{
-										$bFFirst = false;
-									}
-									else
+										$bFFirst = FALSE;
+									} else
 									{
 										$sqlWhere .= ', ';
 									}
 									if ($bEquating_str)
+									{
 										$sqlWhere .= "'".$value[$i]."'";
-									else
+									} else
+									{
 										$sqlWhere .= $value[$i];
+									}
 								}
 								$sqlWhere .= ')';
-								$bFirst = false;
-							}
-							else
+								$bFirst = FALSE;
+							} else
 							{
-								$sqlWhere .= ' '.$this->getFilterLogic()."\n\t"
-									.$helper->wrapQuotes($tableName).'.'
-									.$helper->wrapQuotes($field).$equating;
+								$sqlWhere .= ' '.$this->getFilterLogic ()."\n\t"
+									.$helper->wrapFieldQuotes($field).$equating;
 								$sqlWhere .= '(';
-								$bFFirst = true;
-								for ($i=0; $i<count($value); $i++)
+								$bFFirst = TRUE;
+								for ($i = 0; $i < count ($value); $i++)
 								{
 									if ($bFFirst)
 									{
-										$bFFirst = false;
-									}
-									else
+										$bFFirst = FALSE;
+									} else
 									{
 										$sqlWhere .= ', ';
 									}
 									if ($bEquating_str)
+									{
 										$sqlWhere .= "'".$value[$i]."'";
-									else
+									} else
+									{
 										$sqlWhere .= $value[$i];
+									}
 								}
 								$sqlWhere .= ')';
 							}
 						}
+
 					}
 				}
 				catch (Exception\ArgumentOutOfRangeException $e)

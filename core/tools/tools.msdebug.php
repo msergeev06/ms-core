@@ -764,6 +764,18 @@ function msDebugJsDie ($str) {
 
 function msVarDump ($str)
 {
+	$backtrace = debug_backtrace ();
+	echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
+	echo "<b>".$backtrace[0]['file'].' '.$backtrace[0]['line'].':</b><br>';
 	echo "<pre>"; var_dump($str); echo "</pre>";
+	echo "</div><br>";
 }
 
+function msEchoVar ($str)
+{
+	$backtrace = debug_backtrace ();
+	echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
+	echo "<b>".$backtrace[0]['file'].' '.$backtrace[0]['line'].':</b><br>';
+	echo "<pre>"; echo $str; echo "</pre>";
+	echo "</div><br>";
+}

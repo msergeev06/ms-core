@@ -8,4 +8,4 @@
  * @copyright 2016 Mikhail Sergeev
  */
 
-$arMessages = array();
+return array();

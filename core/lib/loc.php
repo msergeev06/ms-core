@@ -52,8 +52,7 @@ class Loc
 				while (($file = readdir($dh)) !== false) {
 					if ($file != '.' && $file != '..')
 					{
-						$arMessages = array();
-						require_once ($dir . $file);
+						$arMessages = include ($dir . $file);
 						foreach ($arMessages as $field=>$text)
 						{
 							static::$arMessage[strtoupper($prefix).strtoupper($field)] = $text;

@@ -925,7 +925,8 @@ class Query
 		{
 			$this->setQueryBuildParts($this->BuildQuery());
 		}
-		if ($debug)
+		//TODO: Доделать остановку exec с использованием константы
+		if ($debug || (defined("NO_QUERY_EXEC") && NO_QUERY_EXEC===true))
 		{
 			return $this->getQueryBuildParts();
 		}

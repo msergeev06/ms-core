@@ -8,18 +8,21 @@
  * @author Mikhail Sergeev <msergeev06@gmail.com>
  * @copyright 2016 Mikhail Sergeev
  */
-//http://www.getinfo.ru/article610.html
+//www.getinfo.ru/article610.html
 namespace MSergeev\Core\Lib;
 
 use MSergeev\Core\Entity\Query;
 
 class Sections
 {
-	protected static $tableName = "ms_core_sections";
-	protected static $selectFields = array('ID','ACTIVE','SORT','NAME','LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL','PARENT_SECTION_ID');
+	public static $tableName = "ms_core_sections";
+	public static $selectFields = array('ID','ACTIVE','SORT','NAME','LEFT_MARGIN','RIGHT_MARGIN','DEPTH_LEVEL','PARENT_SECTION_ID');
+	public static $tableClassName = null;
 
 	/**
-	 * getTableName - функция возвращает значение параметра класса, содержащую имя таблицы
+	 * Возвращает значение параметра класса, содержащую имя таблицы
+	 *
+	 * @api
 	 *
 	 * @return string
 	 */
@@ -29,17 +32,28 @@ class Sections
 	}
 
 	/**
-	 * getClassName - функция возвращает название класса по имени таблицы, используя функцию Tools::getClassNameByTableName('table')
+	 * Возвращает название класса таблицы по имени таблицы
+	 *
+	 * @api
+	 *
+	 * @use Tools::getClassNameByTableName('table')
 	 *
 	 * @return string
 	 */
 	public static function getClassName()
 	{
-		return Tools::getClassNameByTableName(static::getTableName());
+		if (is_null(static::$tableClassName))
+		{
+			static::$tableClassName = Tools::getClassNameByTableName(static::getTableName());
+		}
+
+		return static::$tableClassName;
 	}
 
 	/**
-	 * getSelectFields - функция возвращает значение параметра класса, содержащую массив полей таблицы
+	 * Возвращает значение параметра класса, содержащую массив полей таблицы
+	 *
+	 * @api
 	 *
 	 * @return array
 	 */
@@ -49,7 +63,9 @@ class Sections
 	}
 
 	/**
-	 * getTreeList - функция возвращает массив дерева каталогов, либо FALSE
+	 * Возвращает массив дерева каталогов, либо FALSE
+	 *
+	 * @api
 	 *
 	 * @param bool $bActive - выбрать только активные разделы
 	 *
@@ -59,7 +75,6 @@ class Sections
 	{
 		$className = static::getClassName();
 		$arGetList = array(
-			'select' => static::$selectFields,
 			'order' => array('LEFT_MARGIN' => 'ASC')
 		);
 		if ($bActive)
@@ -78,7 +93,9 @@ class Sections
 	}
 
 	/**
-	 * getInfo - функция возвращает массив параметров раздела по его ID, либо FALSE
+	 * Возвращает массив параметров раздела по его ID, либо FALSE
+	 *
+	 * @api
 	 *
 	 * @param int $ID - ID раздела
 	 *
@@ -102,13 +119,15 @@ class Sections
 	}
 
 	/**
-	 * getChild - функция возвращает массив дочерних разделов указанного раздела, либо FALSE
+	 * Возвращает массив дочерних разделов указанного раздела, либо FALSE
+	 *
+	 * @api
 	 *
 	 * @param int  $ID          ID раздела
 	 * @param int  $DEPTH_LEVEL уровень вложенности
 	 * @param bool $bActive     вывести только активные разделы
 	 *
-	 * @return bool
+	 * @return bool|array
 	 */
 	public static function getChild ($ID, $bActive=false, $DEPTH_LEVEL=0)
 	{
@@ -116,7 +135,10 @@ class Sections
 		$arSection = static::getInfo($ID);
 		$arGetList = array(
 			'select' => static::$selectFields,
-			'filter' => array('>=LEFT_MARGIN'=>$arSection['LEFT_MARGIN'],'<=RIGHT_MARGIN'=>$arSection['RIGHT_MARGIN']),
+			'filter' => array(
+				'>=LEFT_MARGIN'=>$arSection['LEFT_MARGIN'],
+				'<=RIGHT_MARGIN'=>$arSection['RIGHT_MARGIN']
+			),
 			'order' => array('LEFT_MARGIN'=>'ASC')
 		);
 		if ($bActive)
@@ -138,7 +160,9 @@ class Sections
 	}
 
 	/**
-	 * getParent - возвращает массив родителей раздела, либо FALSE
+	 * Возвращает массив родителей раздела, либо FALSE
+	 *
+	 * @api
 	 *
 	 * @param int  $ID          ID раздела
 	 * @param bool $bActive     вернуть только активные разделы
@@ -151,7 +175,9 @@ class Sections
 		$arSection = static::getInfo($ID);
 		$arGetList = array(
 			'select' => static::$selectFields,
-			'filter' => array('<=LEFT_MARGIN'=>$arSection['LEFT_MARGIN'],'>=RIGHT_MARGIN'=>$arSection['RIGHT_MARGIN']),
+			'filter' => array(
+				'<=LEFT_MARGIN'=>$arSection['LEFT_MARGIN'],
+				'>=RIGHT_MARGIN'=>$arSection['RIGHT_MARGIN']),
 			'order' => array('LEFT_MARGIN'=>'ASC')
 		);
 		if ($bActive)
@@ -169,7 +195,9 @@ class Sections
 	}
 
 	/**
-	 * getBranch - возвращает всю ветку, в которой участвует раздел, либо FALSE
+	 * Возвращает всю ветку, в которой участвует раздел, либо FALSE
+	 *
+	 * @api
 	 *
 	 * @param int  $ID          ID раздела
 	 * @param bool $bActive     вернуть только активные разделы
@@ -182,7 +210,9 @@ class Sections
 		$arSection = static::getInfo($ID);
 		$arGetList = array(
 			'select' => static::$selectFields,
-			'filter' => array('>RIGHT_MARGIN'=>$arSection['LEFT_MARGIN'],'<LEFT_MARGIN'=>$arSection['RIGHT_MARGIN']),
+			'filter' => array(
+				'>RIGHT_MARGIN'=>$arSection['LEFT_MARGIN'],
+				'<LEFT_MARGIN'=>$arSection['RIGHT_MARGIN']),
 			'order' => array('LEFT_MARGIN'=>'ASC')
 		);
 		if ($bActive)
@@ -200,7 +230,9 @@ class Sections
 	}
 
 	/**
-	 * getParentID - возвращает ID родительского раздела, либо FALSE
+	 * Возвращает ID родительского раздела, либо FALSE
+	 *
+	 * @api
 	 *
 	 * @param int $ID       ID раздела
 	 *
@@ -220,7 +252,9 @@ class Sections
 	}
 
 	/**
-	 * getParentInfo - возвращает массив параметров родительского раздела, либо FALSE
+	 * Возвращает массив параметров родительского раздела, либо FALSE
+	 *
+	 * @api
 	 *
 	 * @param int $ID        ID раздела
 	 *
@@ -238,16 +272,25 @@ class Sections
 		}
 	}
 
-
+	/**
+	 * Добавляет новый раздел в дерево
+	 *
+	 * @api
+	 *
+	 * @param $arSection
+	 *
+	 * @return bool|int
+	 */
 	public static function addSection ($arSection)
 	{
 		/*		Создание узла – самое простое действие над деревом. Для того, что бы его осуществить нам потребуется уровень и
 				правый ключ родительского узла (узел в который добавляется новый), либо максимальный правый ключ, если у
 				нового узла не будет родительского.*/
 
-		$helper = new SqlHelper();
+		$tableName = static::getTableName();
 		$className = static::getClassName();
-		if (!$arSection = self::checkFields($arSection))
+		$helper = new SqlHelper($tableName);
+		if (!$arSection = static::checkAddFields($arSection))
 		{
 			return false;
 		}
@@ -258,8 +301,10 @@ class Sections
 		if ($arSection['PARENT_SECTION_ID']==0)
 		{
 			$query = new Query('select');
-			$sql = "SELECT\n\tMAX(".$helper->wrapQuotes('RIGHT_MARGIN').") as RIGHT_MARGIN\nFROM\n\t"
-				.$helper->wrapQuotes(static::getTableName());
+			$sql = "SELECT\n\t"
+				.$helper->getMaxFunction('RIGHT_MARGIN','RIGHT_MARGIN')."\n"
+				."FROM\n\t"
+				.$helper->wrapTableQuotes();
 			$query->setQueryBuildParts($sql);
 			$res = $query->exec();
 			if ($ar_res = $res->fetch())
@@ -267,18 +312,27 @@ class Sections
 				$right_key = $ar_res['RIGHT_MARGIN'] + 1;
 				$level = 0;
 			}
+			else
+			{
+				$right_key = 1;
+				$level = 0;
+			}
 		}
 		else
 		{
-			$arParent = static::getInfo($arSection['PARENT_SECTION_ID']);
+			$arParent = static::getInfo ($arSection['PARENT_SECTION_ID']);
 			$right_key = $arParent['RIGHT_MARGIN'];
 			$level = $arParent['DEPTH_LEVEL'];
 
 			//1. Обновляем ключи существующего дерева, узлы стоящие за родительским узлом:
 			$query = new Query('update');
-			$sql = "UPDATE\n\t".$helper->wrapQuotes(static::getTableName())."\nSET\n\t".$helper->wrapQuotes('LEFT_MARGIN')
-				." = ".$helper->wrapQuotes('LEFT_MARGIN')." + 2,\n\t".$helper->wrapQuotes('RIGHT_MARGIN')
-				." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + 2\nWHERE\n\t".$helper->wrapQuotes('LEFT_MARGIN')." > ".$right_key;
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + 2,\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + 2\n"
+				."WHERE\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." > ".$right_key;
 			$query->setQueryBuildParts($sql);
 			$res = $query->exec();
 /*			Но мы обновили только те узлы в которых изменяются оба ключа, при этом родительскую ветку (не узел, а все
@@ -287,13 +341,18 @@ class Sections
 			нельзя.*/
 		}
 
+
 		//2. Обновляем родительскую ветку:
 		$query = new Query('update');
-		$sql = "UPDATE\n\t".$helper->wrapQuotes(static::getTableName())."\nSET\n\t".$helper->wrapQuotes('RIGHT_MARGIN')
-			." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + 2\nWHERE\n\t".$helper->wrapQuotes('RIGHT_MARGIN')." >= "
-			.$right_key."\n\tAND\n\t".$helper->wrapQuotes('LEFT_MARGIN')." < ".$right_key;
+		$sql = "UPDATE\n\t"
+			.$helper->wrapTableQuotes()."\n"
+			."SET\n\t"
+			.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + 2\n"
+			."WHERE\n\t"
+			.$helper->wrapQuotes('RIGHT_MARGIN')." >= ".$right_key." AND\n\t"
+			.$helper->wrapQuotes('LEFT_MARGIN')." < ".$right_key;
 		$query->setQueryBuildParts($sql);
-		$res = $query->exec();
+		$query->exec();
 
 		//3. Теперь добавляем новый узел :
 		$query = new Query('insert');
@@ -304,11 +363,15 @@ class Sections
 		{
 			unset($arSection['ID']);
 		}
-		$query->setInsertParams($arSection,static::getTableName(),$className::getMapArray());
+		$query->setInsertParams(
+			$arSection,
+			$tableName,
+			$className::getMapArray()
+		);
 		$res = $query->exec();
 		$insertID = $res->getInsertId();
 		$arSection['ID'] = $insertID;
-		static::sortAddingSection($arSection);
+		static::sortSection($insertID);
 
 		if ($insertID > 0)
 		{
@@ -320,83 +383,732 @@ class Sections
 		}
 	}
 
-	public static function sortAddingSection ($arSection)
+	/**
+	 * Сортирует раздел по индексу сортировки.
+	 * Если параметер sort указан, в начале обновляет значение этого параметра у раздела
+	 * Изменяет такие поля как LEFT_MARGIN и RIGHT_MARGIN
+	 *
+	 * @api
+	 *
+	 * @param int       $sectionID   ID раздела
+	 * @param int|null  $sort        Новый индекс сортировки, если необходим
+	 */
+	public static function sortSection ($sectionID, $sort=null)
 	{
-		//msDebug($arSection);
-		$helper = new SqlHelper();
+		$arSection = static::getInfo($sectionID);
+		if (!is_null($sort))
+		{
+			$arSection['SORT'] = intval($sort);
+			static::updateSection($sectionID,array('SORT'=>intval($sort)));
+		}
 		$className = static::getClassName();
 		$tableName = static::getTableName();
+		$helper = new SqlHelper($tableName);
+		$arParams = array();
 
 		//1. Ключи и уровень перемещаемого узла
-		if ($arSection['PARENT_SECTION_ID'] > 0)
+		static::getKeysAndLevel ($arSection, $arParams);
+
+		//2. Уровень родительского узла:
+		static::getParentLevel ($arSection, $arParams);
+
+		//3. Правый, левый ключ, уровень узла за который мы вставляем узел (ветку):
+		$arChild = static::getChild($arSection['PARENT_SECTION_ID']);
+		$arParent = $arChild[0];
+		unset($arChild[0]);
+		if (!empty($arChild))
 		{
-			$arParent = static::getInfo(intval($arSection['PARENT_SECTION_ID']));
-			$arParams = array(
-				'LEFT_MARGIN' => $arParent['LEFT_MARGIN'],
-				'RIGHT_MARGIN' => $arParent['RIGHT_MARGIN'],
-			);
-		}
-		else
-		{
-			$query = new Query('select');
-			$sql = "SELECT\n\tMAX(".$helper->wrapQuotes('RIGHT_MARGIN').") as MAX_RIGHT_MARGIN\nFROM\n\t".$helper->wrapQuotes($tableName)
-				."\nWHERE\n\t".$helper->wrapQuotes('PARENT_SECTION_ID')." = 0";
-			$query->setQueryBuildParts($sql);
-			$res = $query->exec();
-			$ar_res = $res->fetch();
-			$arParams = array(
-				'LEFT_MARGIN' => 0,
-				'RIGHT_MARGIN' => $ar_res['MAX_RIGHT_MARGIN'] + 1,
-			);
-		}
-		$arSort = $className::getList(array(
-			'select' => static::getSelectFields(),
-			'filter' => array('PARENT_SECTION_ID' => $arSection['PARENT_SECTION_ID']),
-			'order' => array('SORT'=>'ASC', 'NAME'=>'ASC')
-		));
-		//msDebug($arSort);
-		foreach ($arSort as $key=>$sort)
-		{
-			if ($sort['ID']!=$arSection['ID'])
+			foreach ($arChild as $i=>$ar_child)
 			{
-				$arParams['LEFT_MARGIN'] = $sort['RIGHT_MARGIN'];
+				if ($ar_child['PARENT_SECTION_ID']!=$arSection['PARENT_SECTION_ID'])
+				{
+					unset($arChild[$i]);
+				}
+			}
+		}
+		$arTemp = $arChild;
+		$arChild = array();
+		$arSort = array();
+		if (!empty($arTemp))
+		{
+			foreach ($arTemp as $ar_child)
+			{
+				$arChild[$ar_child['ID']] = $ar_child;
+				$arSort[$ar_child['ID']] = $ar_child['SORT'];
+			}
+		}
+		unset($arTemp);
+		$i=0;
+		foreach ($arSort as $id=>$sort)
+		{
+			if ($id==$arSection['ID'])
+			{
+				$arParams['position_now'] = $i;
+			}
+			$i++;
+		}
+		asort($arSort);
+		$arParams['arSort'] = $arSort;
+		$p = 0;
+		$temp_right_key = $temp_level = $temp_left_key = $arParams['level_near'] = $arParams['left_key_near'] = $arParams['right_key_near'] = 0;
+		foreach ($arSort as $id=>$sort)
+		{
+			if ($id==$arSection['ID'])
+			{
+				if ($p==0)
+				{
+					$arParams['left_key_near'] = $arParent['LEFT_MARGIN'];
+					$arParams['right_key_near'] = $arParent['RIGHT_MARGIN'];
+					$arParams['level_near'] = $arParent['DEPTH_LEVEL'];
+					$arParams['position_target'] = $p;
+					break;
+				}
+				else
+				{
+					$arParams['left_key_near'] = $temp_left_key;
+					$arParams['right_key_near'] = $temp_right_key;
+					$arParams['level_near'] = $temp_level;
+					$arParams['position_target'] = $p;
+					break;
+				}
 			}
 			else
 			{
-				break;
+				$temp_left_key = $arChild[$id]['LEFT_MARGIN'];
+				$temp_right_key = $arChild[$id]['RIGHT_MARGIN'];
+				$temp_level = $arChild[$id]['DEPTH_LEVEL'];
 			}
+			$p++;
 		}
-		/*
-		 * $arParams['LEFT_MARGIN']
-		 * $arParams['RIGHT_MARGIN']
-		 */
-		//msDebug($arParams);
-		$query = new Query('update');
-		$sql = "UPDATE\n\t".$helper->wrapQuotes($tableName)."\nSET\n\t"
-			.$helper->wrapQuotes('LEFT_MARGIN')." = ".($arParams['LEFT_MARGIN']+1).",\n\t"
-			.$helper->wrapQuotes('RIGHT_MARGIN')." = ".($arParams['LEFT_MARGIN']+2)."\nWHERE\n\t"
-			.$helper->wrapQuotes('ID')." = ".$arSection['ID'];
-		$query->setQueryBuildParts($sql);
-		$res = $query->exec();
+		//Получаем $arParams['right_key_near'] и $arParams['left_key_near'] (для варианта изменения порядка)
+		//Если элемент должен находится в самом низу и находится там - выходим, так как ничего делать не нужно
+		if ($arParams['position_now']==$arParams['position_target'])
+		{
+			return;
+		}
 
-		$query = new Query('update');
-		$sql = "UPDATE\n\t".$helper->wrapQuotes($tableName)."\nSET\n\t"
-			.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + 2,\n\t"
-			.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + 2\nWHERE\n\t"
-			.$helper->wrapQuotes('LEFT_MARGIN')." > ".$arParams['LEFT_MARGIN']."\n\tAND\n\t"
-			.$helper->wrapQuotes('RIGHT_MARGIN')." < ".$arParams['RIGHT_MARGIN']."\n\tAND\n\t"
-			.$helper->wrapQuotes('ID')." <> ".$arSection['ID'];
-		$query->setQueryBuildParts($sql);
-		$res = $query->exec();
+		//4. Определяем смещения:
+		//$level_up - $level + 1 = $skew_level - смещение уровня изменяемого узла;
+		$arParams['skew_level'] = $arParams['level_up'] - $arParams['level'] + 1;
+		//$right_key - $left_key + 1 = $skew_tree - смещение ключей дерева;
+		$arParams['skew_tree'] = $arParams['right_key'] - $arParams['left_key'] + 1;
+
+		//Выбираем все узлы перемещаемой ветки:
+		$arRes = $className::getList(array(
+			'select' => array('ID'),
+			'filter' => array('>=LEFT_MARGIN'=>$arParams['left_key'], '<=RIGHT_MARGIN'=>$arParams['right_key'])
+		));
+		$arParams['id_edit'] = array();
+		foreach($arRes as $ar_res)
+		{
+			$arParams['id_edit'][] = $ar_res['ID'];
+		}
+		//Получаем $id_edit - список id номеров перемещаемой ветки.
+
+		// Определяем в какую область перемещается узел
+		if (($arParams['left_key_near'] < $arParams['left_key']) && ($arParams['level'] > $arParams['level_near']))
+		{
+			//Если перемещаемся выше и встаем сразу за родительским узлом
+			$arParams['up_down'] = "parent";
+
+			//Определяем смещение ключей редактируемого узла $right_key_near - $left_key + 1 = $skew_edit;
+			$arParams['skew_edit'] = $arParams['left_key_near'] - $arParams['left_key'] + 1;
+
+			/* 1.
+			UPDATE
+				tableName
+			SET
+				RIGHT_MARGIN = RIGHT_MARGIN + $skew_tree
+				LEFT_MARGIN = LEFT_MARGIN + $skew_tree
+			WHERE
+				RIGHT_MARGIN < $left_key AND
+				RIGHT_MARGIN > $left_key_near AND
+				ID NOT IN ($id_edit)
+			 */
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + ".$arParams['skew_tree'].",\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$arParams['skew_tree']."\n"
+				."WHERE\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." < ".$arParams['left_key']." AND\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." > ".$arParams['left_key_near']." AND\n\t"
+				.$helper->wrapQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+
+			//Теперь можно переместить ветку:
+			/*
+			UPDATE
+				tableName
+			SET
+				LEFT_MARGIN = LEFT_MARGIN + $skew_edit,
+				RIGHT_MARGIN = RIGHT_MARGIN + $skew_edit,
+			WHERE
+				ID IN ($id_edit)
+			*/
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + ".$arParams['skew_edit']."\n"
+				."WHERE\n\t"
+				.$helper->wrapQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+		}
+		elseif ($arParams['left_key_near'] < $arParams['left_key'])
+		{
+			//Если перемещаемся выше
+			$arParams['up_down'] = "up";
+
+			//Определяем смещение ключей редактируемого узла $right_key_near - $left_key + 2 = $skew_edit;
+			$arParams['skew_edit'] = ($arParams['left_key_near'] - $arParams['left_key'] + 2)*(-1);
+
+			/* 1.
+			UPDATE
+				tableName
+			SET
+				RIGHT_MARGIN = RIGHT_MARGIN + $skew_tree
+				LEFT_MARGIN = LEFT_MARGIN + $skew_tree
+			WHERE
+				RIGHT_MARGIN < $left_key AND
+				RIGHT_MARGIN > $left_key_near AND
+				ID NOT IN ($id_edit)
+			 */
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + ".$arParams['skew_tree'].",\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$arParams['skew_tree']."\n"
+				."WHERE\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." < ".$arParams['right_key']." AND\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." > ".$arParams['right_key_near']." AND\n\t"
+				.$helper->wrapQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+
+			//Теперь можно переместить ветку:
+			/*
+			UPDATE
+				tableName
+			SET
+				LEFT_MARGIN = LEFT_MARGIN - ($skew_edit*(-1)),
+				RIGHT_MARGIN = RIGHT_MARGIN - ($skew_edit*(-1)),
+			WHERE
+				ID IN ($id_edit)
+			*/
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." - ".$arParams['skew_edit'].",\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." - ".$arParams['skew_edit']."\n"
+				."WHERE\n\t"
+				.$helper->wrapQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+		}
+		else
+		{
+			//Если перемещаемся ниже
+			$arParams['up_down'] = "down";
+
+			//Определяем смещение ключей редактируемого узла $right_key_near - $left_key + 1 - $skew_tree = $skew_edit.
+			$arParams['skew_edit'] = $arParams['right_key_near'] - $arParams['left_key'] + 1 - $arParams['skew_tree'];
+
+			/* 1.
+			UPDATE
+				tableName
+			SET
+				RIGHT_MARGIN = RIGHT_MARGIN - $skew_tree
+				LEFT_MARGIN = LEFT_MARGIN - $skew_tree
+			WHERE
+				RIGHT_MARGIN > $right_key AND
+				RIGHT_MARGIN <= $right_key_near AND
+				ID NOT IN ($id_edit)
+			*/
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." - ".$arParams['skew_tree'].",\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." - ".$arParams['skew_tree']."\n"
+				."WHERE\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." > ".$arParams['right_key']." AND\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$arParams['right_key_near']." AND\n\t"
+				.$helper->wrapQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+
+			//Теперь можно переместить ветку:
+			/*
+			UPDATE
+				nameTable
+			SET
+				LEFT_MARGIN = LEFT_MARGIN + $skew_edit,
+				RIGHT_MARGIN = RIGHT_MARGIN + $skew_edit,
+			WHERE
+				ID IN ($id_edit)
+			*/
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapQuotes('LEFT_MARGIN')." = ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
+				.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + ".$arParams['skew_edit']."\n"
+				."WHERE\n\t"
+				.$helper->wrapQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+		}
 	}
 
+	/**
+	 * Перемещает раздел в другой подраздел.
+	 * Если параметер newParentID указан, в начале обновляет значение этого параметра у раздела
+	 * Изменяет поле DEPTH_LEVEL
+	 *
+	 * @param int       $sectionID      ID раздела
+	 * @param int|null  $newParentID    ID нового родительского раздела
+	 */
+	public static function changeParent ($sectionID, $newParentID=null)
+	{
+		$arSection = static::getInfo($sectionID);
+		//msDebug(is_null($newParentID));
+		if (!is_null($newParentID))
+		{
+			$arSection['PARENT_SECTION_ID'] = intval($newParentID);
+			static::updateSection($sectionID,array('PARENT_SECTION_ID'=>intval($newParentID)));
+		}
+		$arParent = static::getParentFromTree($arSection['ID']);
+		//msDebug($arParent['ID']);
+		//msDebug($arSection['PARENT_SECTION_ID']);
+		if ($arParent['ID'] == $arSection['PARENT_SECTION_ID'])
+		{
+			//Если раздел уже лежит в том разделе, где должен - ничего делать не нужно. Просто сортируем и выходим
+			//msDebug('sort and return');
+			static::sortSection($arSection['ID']);
+			return;
+		}
+
+		$className = static::getClassName();
+		$tableName = static::getTableName();
+		$helper = new SqlHelper($tableName);
+		$arParams = array();
+
+		//1. Ключи и уровень перемещаемого узла
+		static::getKeysAndLevel($arSection,$arParams);
+
+		//2. Уровень нового родительского узла (если узел перемещается в "корень" то сразу можно подставить значение 0)
+		if ($arSection['PARENT_SECTION_ID'] == 0)
+		{
+			$arParams['level_up'] = 0;
+			//3. Правый ключ узла за который мы вставляем узел (ветку)
+			//При переносе узла в корень дерева – максимальный правый ключ ветки;
+			/*
+			 * SELECT
+			 *      MAX(`RIGHT_MARGIN`) AS `RIGHT_MARGIN`
+			 * FROM
+			 *      ms_core_sections
+			 */
+			$query = new Query('select');
+			$sql = "SELECT\n\t"
+				.$helper->getMaxFunction('RIGHT_MARGIN','RIGHT_MARGIN')."\n"
+				."FROM\n\t"
+				.$helper->wrapTableQuotes();
+			$query->setQueryBuildParts($sql);
+			$res = $query->exec();
+			if ($ar_res = $res->fetch())
+			{
+				$arParams['right_key_near'] = $ar_res['RIGHT_MARGIN'];
+			}
+			//msDebug('parent=0');
+		}
+		else
+		{
+			$arNewParent = static::getInfo($arSection['PARENT_SECTION_ID']);
+			$arChild = static::getChild($arSection['PARENT_SECTION_ID']);
+			//msDebug($arChild);
+			if (count($arChild)>1)
+			{
+				$arParams['isset_children'] = true;
+			}
+			else
+			{
+				$arParams['isset_children'] = false;
+			}
+			$arParams['level_up'] = $arNewParent['DEPTH_LEVEL'];
+			//3. Правый ключ узла за который мы вставляем узел (ветку)
+			if ($arNewParent['DEPTH_LEVEL'] == ($arSection['DEPTH_LEVEL'] - 2))
+			{
+				//msDebug('NEW_DEPTH ('.$arNewParent['DEPTH_LEVEL'].') == OLD_DEPTH ('.$arSection['DEPTH_LEVEL'].') - 2');
+				//При поднятии узла на уровень выше – правый ключ старого родительского узла
+				$arParams['right_key_near'] = $arNewParent['RIGHT_MARGIN']-1;
+				//msDebug($arParent);
+			}
+			else
+			{
+				//При простом перемещении в другой узел;
+				/*
+				 * SELECT
+				 *      (`RIGHT_MARGIN` - 1) AS `RIGHT_MARGIN`
+				 * FROM
+				 *      `ms_core_sections`
+				 * WHERE
+				 *      `ID` = $arSection['PARENT_SECTION_ID']
+				 */
+				$query  = new Query('select');
+				$sql = "SELECT\n\t"
+					."(".$helper->wrapFieldQuotes('RIGHT_MARGIN')." - 1) AS `RIGHT_MARGIN`\n"
+					//.$helper->wrapFieldQuotes('RIGHT_MARGIN')."\n"
+					."FROM\n\t"
+					.$helper->wrapTableQuotes()."\n"
+					."WHERE\n\t"
+					.$helper->wrapFieldQuotes('ID')." = ".$arSection['PARENT_SECTION_ID'];
+				$query->setQueryBuildParts($sql);
+				$res = $query->exec();
+				if ($ar_res = $res->fetch())
+				{
+					$arParams['right_key_near'] = $ar_res['RIGHT_MARGIN'];
+				}
+			}
+		}
+
+		//4. Определяем смещения:
+		$arParams['skew_level'] = $arParams['level_up'] - $arParams['level'] + 1; // - смещение уровня изменяемого узла;
+		$arParams['skew_tree'] = $arParams['right_key'] - $arParams['left_key'] + 1; // - смещение ключей дерева;
+
+		//5. Выбираем все узлы перемещаемой ветки:
+		$arRes = $className::getList(array(
+			'select' => array('ID'),
+			'filter' => array('>=LEFT_MARGIN'=>$arParams['left_key'], '<=RIGHT_MARGIN'=>$arParams['right_key'])
+		));
+		$arParams['id_edit'] = array();
+		foreach($arRes as $ar_res)
+		{
+			$arParams['id_edit'][] = $ar_res['ID'];
+		}
+		//Получаем $id_edit - список id номеров перемещаемой ветки.
+
+		//6. Определяем куда перемещается узел
+		if ($arParams['right_key_near'] < $arParams['right_key'])
+		{
+			//Перемещаемся вверх
+			$arParams['up_down'] = "up";
+
+			//6.1. Определяем смещение ключей редактируемого узла
+			$arParams['skew_edit'] = $arParams['right_key_near'] - $arParams['left_key'] + 1;
+
+			/*
+			 * 6.2.
+			 * UPDATE
+			 *      table_name
+			 * SET
+			 *      RIGHT_MARGIN = RIGHT_MARGIN + $skew_tree
+			 * WHERE
+			 *      RIGHT_MARGIN < $left_key AND
+			 *      RIGHT_MARGIN > $right_key_near AND
+			 *      ID NOT IN ($id_edit)
+			 */
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN'). " = "
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN'). " + ".$arParams['skew_tree']."\n"
+				."WHERE\n\t"
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." < ".$arParams['left_key']." AND \n\t"
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." > ".$arParams['right_key_near']." AND\n\t"
+				.$helper->wrapFieldQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+			//msEchoVar($sql);
+
+			/*
+			 * 6.3.
+			 * UPDATE
+			 *      table_name
+			 * SET
+			 *      LEFT_MARGIN = LEFT_MARGIN + $skew_tree
+			 * WHERE
+			 *      LEFT_MARGIN < $left_key AND
+			 *      LEFT_MARGIN > $right_key_near
+			 *      ID NOT IN ($id_edit)
+			 */
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." = "
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." + ".$arParams['skew_tree']."\n"
+				."WHERE\n\t"
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." < ".$arParams['left_key']." AND\n\t"
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." > ".$arParams['right_key_near']." AND\n\t"
+				.$helper->wrapFieldQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+			//msEchoVar($sql);
+
+			/*
+			 * 6.4.
+			 * UPDATE
+			 *      table_name
+			 * SET
+			 *      LEFT_MARGIN = LEFT_MARGIN + $skew_edit,
+			 *      RIGHT_MARGIN = RIGHT_MARGIN + $skew_edit,
+			 *      DEPTH_LEVEL = DEPTH_LEVEL + $skew_level
+			 * WHERE
+			 *      ID IN ($id_edit)
+			 */
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." = "
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." = "
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
+				.$helper->wrapFieldQuotes('DEPTH_LEVEL')." = "
+				.$helper->wrapFieldQuotes('DEPTH_LEVEL')." + ".$arParams['skew_level']."\n"
+				."WHERE\n\t"
+				.$helper->wrapFieldQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			$query->exec();
+			//msEchoVar($sql);
+		}
+		else
+		{
+			//TODO: Убрать bExec
+			$bExec = false;
+			$bExec = true;
+			//Перемещаемся вниз
+			$arParams['up_down'] = "down";
+
+			//6.1. Определяем смещение ключей редактируемого узла
+			$arParams['skew_edit'] = $arParams['right_key_near'] - $arParams['left_key'] - $arParams['skew_tree'] + 1;
+
+			/*
+			 * 6.2.
+			 * UPDATE
+			 *      table_name
+			 * SET
+			 *      RIGHT_MARGIN = RIGHT_MARGIN - $skew_tree
+			 * WHERE
+			 *      RIGHT_MARGIN > $right_key AND
+			 *      RIGHT_MARGIN <= $right_key_near
+			 *      ID NOT IN ($id_edit)
+			 */
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." = "
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." - ".$arParams['skew_tree']."\n"
+				."WHERE\n\t"
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." > ".$arParams['right_key']." AND\n\t"
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." <";
+//			if ($arParams['isset_children'])
+//			{
+				$sql .= "=";
+//			}
+			$sql .= " ".$arParams['right_key_near']." AND\n\t"
+				.$helper->wrapFieldQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			//TODO: Убрать if
+			if ($bExec) $query->exec();
+			//msEchoVar($sql);
+
+			/*
+			 * 6.3.
+			 * UPDATE
+			 *      table_name
+			 * SET
+			 *      LEFT_MARGIN = LEFT_MARGIN - $skew_tree
+			 * WHERE
+			 *      LEFT_MARGIN < $left_key AND
+			 *      LEFT_MARGIN > $right_key_near
+			 *      ID NOT IN ($id_edit)
+			 */
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." = "
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." - ".$arParams['skew_tree']."\n"
+				."WHERE\n\t"
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." > ".$arParams['left_key']." AND\n\t"
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." <= ".$arParams['right_key_near']." AND\n\t"
+				.$helper->wrapFieldQuotes('ID')." NOT IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			//TODO: Убрать if
+			if ($bExec) $query->exec();
+			//msEchoVar($sql);
+
+/*			if ($arSection['PARENT_SECTION_ID'] == 0)
+			{
+				$arParent0 = static::getParentFromTree($arSection['ID'],true);
+
+				/*
+				 * 6.4.
+				 * UPDATE
+				 *      table_name
+				 * SET
+				 *      RIGHT_MARGIN = RIGHT_MARGIN - $skew_tree
+				 * WHERE
+				 *      ID = $arParent[0][ID]
+				 * /
+				$query = new Query('update');
+				$sql = "UPDATE\n\t"
+					.$helper->wrapTableQuotes()."\n"
+					."SET\n\t"
+					.$helper->wrapFieldQuotes('RIGHT_MARGIN')." = "
+					.$helper->wrapFieldQuotes('RIGHT_MARGIN')." - ".$arParams['skew_tree']."\n"
+					."WHERE\n\t"
+					.$helper->wrapFieldQuotes('ID')." = ".$arParent0['ID'];
+				$query->setQueryBuildParts($sql);
+				//TODO: Убрать if
+				if ($bExec) $query->exec();
+				msEchoVar($sql);
+			}*/
+			/*
+			 * 6.5.
+			 * UPDATE
+			 *      table_name
+			 * SET
+			 *      LEFT_MARGIN = LEFT_MARGIN + $skew_edit,
+			 *      RIGHT_MARGIN = RIGHT_MARGIN + $skew_edit,
+			 *      DEPTH_LEVEL = DEPTH_LEVEL + $skew_level
+			 * WHERE
+			 *      ID IN ($id_edit)
+			 */
+            /*if ($arSection['PARENT_SECTION_ID']==0)
+			{
+				$arParams['skew_edit']++;
+			}*/
+			$query = new Query('update');
+			$sql = "UPDATE\n\t"
+				.$helper->wrapTableQuotes()."\n"
+				."SET\n\t"
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." = "
+				.$helper->wrapFieldQuotes('LEFT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." = "
+				.$helper->wrapFieldQuotes('RIGHT_MARGIN')." + ".$arParams['skew_edit'].",\n\t"
+				.$helper->wrapFieldQuotes('DEPTH_LEVEL')." = "
+				.$helper->wrapFieldQuotes('DEPTH_LEVEL')." + ".$arParams['skew_level']."\n"
+				."WHERE\n\t"
+				.$helper->wrapFieldQuotes('ID')." IN (".implode(',',$arParams['id_edit']).")";
+			$query->setQueryBuildParts($sql);
+			//TODO: Убрать if
+			if ($bExec) $query->exec();
+			//msEchoVar($sql);
+		}
+
+		static::sortSection($arSection['ID']);
+
+		//msDebug($arParams);
+	}
+
+	/**
+	 * Возвращает данные родительского раздела (осуществляет поиск по дереву разделов), либо false
+	 *
+	 * @param int   $sectionID      ID раздела
+	 * @param bool  $mainSection    Флаг, обозначающий необходимость вернуть самый верхний раздел
+	 *
+	 * @return array|bool
+	 */
+	protected static function getParentFromTree ($sectionID, $mainSection=false)
+	{
+		if (intval($sectionID)>0)
+		{
+			$arParents = static::getParent(intval($sectionID));
+			if ($mainSection)
+			{
+				return $arParents[0];
+			}
+			for ($i=0; $i<count($arParents)-1; $i++)
+			{
+				if ($arParents[$i+1]['ID'] == intval($sectionID))
+				{
+					//$arParent = $arParents[$i];
+					$arParams['right_key_near'] = $arParents[$i]['RIGHT_MARGIN'];
+					return $arParents[$i];
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Определяет ключи и уровень перемещаемого узла
+	 *
+	 * @api
+	 *
+	 * @param $arSection
+	 * @param $arParams
+	 */
+	protected static function getKeysAndLevel ($arSection, &$arParams)
+	{
+		$arParams['level'] = $arSection['DEPTH_LEVEL'];
+		$arParams['left_key'] = $arSection['LEFT_MARGIN'];
+		$arParams['right_key'] = $arSection['RIGHT_MARGIN'];
+	}
+
+	/**
+	 * Определяет уровень родительского узла
+	 *
+	 * @param $arSection
+	 * @param $arParams
+	 */
+	protected static function getParentLevel ($arSection, &$arParams)
+	{
+		$arParams['level_up'] = (($arSection['DEPTH_LEVEL']<=0)?0:($arSection['DEPTH_LEVEL']-1));
+	}
+
+	/**
+	 * Обновляет указанный раздел, предварительно исключив неизменяемые поля
+	 *
+	 * @param $sectionID
+	 * @param $arUpdate
+	 *
+	 * @return DBResult
+	 */
+	protected static function updateSection ($sectionID, $arUpdate)
+	{
+		$tableName = static::getTableName();
+		$className = static::getClassName();
+		static::checkUpdateFields($arUpdate);
+		$query = new Query('update');
+		$query->setUpdateParams(
+			$arUpdate,
+			$sectionID,
+			$tableName,
+			$className::getMapArray()
+		);
+		$res = $query->exec();
+
+		return $res;
+	}
+
+
+	/**
+	 * Удаляет указанный раздел
+	 *
+	 * @api
+	 *
+	 * @param int $sectionID ID удаляемого раздела
+	 */
 	public static function deleteSection ($sectionID)
 	{
 /*		Удаление узла не намного сложнее, но требуется учесть, что у удаляемого узла могут быть подчиненные узлы. Для
 		осуществления этого действия нам потребуется левый и правый ключ удаляемого узла.*/
 
 		$tableName = static::getTableName();
-		$helper = new SqlHelper();
+		$helper = new SqlHelper($tableName);
 
 		//Пусть $left_key – левый ключ удаляемого узла, а $right_key – правый
 		$arSection = static::getInfo($sectionID);
@@ -413,10 +1125,13 @@ class Sections
 			AND
 			`RIGHT_MARGIN` <= $right_key
 		 */
-		$sql = "DELETE FROM\n\t".$helper->wrapQuotes($tableName)."\nWHERE\n\t ".$helper->wrapQuotes('LEFT_MARGIN')." >= "
-			.$left_key."\n\tAND\n\t".$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$right_key;
+		$sql = "DELETE FROM\n\t"
+			.$helper->wrapTableQuotes()."\n"
+			."WHERE\n\t"
+			.$helper->wrapQuotes('LEFT_MARGIN')." >= ".$left_key." AND\n\t"
+			.$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$right_key;
 		$query->setQueryBuildParts($sql);
-		$res = $query->exec();
+		$query->exec();
 
 		//2. Обновляем ключи оставшихся веток:
 /*		Как и в случае с добавлением обновление происходит двумя командами: обновление ключей родительской ветки и
@@ -434,12 +1149,16 @@ class Sections
 			AND
 			`LEFT_MARGIN` < $left_key
 		 */
-		$sql = "UPDATE\n\t".$helper->wrapQuotes($tableName)."\nSET\n\t".$helper->wrapQuotes('RIGHT_MARGIN')." = "
-			.$helper->wrapQuotes('RIGHT_MARGIN')." – (".$right_key." - ".$left_key." + 1)\nWHERE\n\t"
-			.$helper->wrapQuotes('RIGHT_MARGIN')." > ".$right_key."\n\tAND\n\t".$helper->wrapQuotes('LEFT_MARGIN')." < "
-			.$left_key;
+		$sql = "UPDATE\n\t"
+			.$helper->wrapTableQuotes()."\n"
+			."SET\n\t"
+			.$helper->wrapQuotes('RIGHT_MARGIN')." = "
+			.$helper->wrapQuotes('RIGHT_MARGIN')." - (".$right_key." - ".$left_key." + 1)\n"
+			."WHERE\n\t"
+			.$helper->wrapQuotes('RIGHT_MARGIN')." > ".$right_key." AND\n\t"
+			.$helper->wrapQuotes('LEFT_MARGIN')." < ".$left_key;
 		$query->setQueryBuildParts($sql);
-		$res = $query->exec();
+		$query->exec();
 
 		//2.2. Обновление последующих узлов :
 		$query = new Query('update');
@@ -452,352 +1171,130 @@ class Sections
 		WHERE
 			`LEFT_MARGIN` > $right_key
 		 */
-		$sql = "UPDATE\n\t".$helper->wrapQuotes($tableName)."\nSET\n\t".$helper->wrapQuotes('LEFT_MARGIN')." = "
-			.$helper->wrapQuotes('LEFT_MARGIN')." – (".$right_key." - ".$left_key." + 1),\n\t"
-			.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." – (".$right_key." - "
-			.$left_key." + 1)\nWHERE\n\t".$helper->wrapQuotes('LEFT_MARGIN')." > ".$right_key;
+		$sql = "UPDATE\n\t"
+			.$helper->wrapTableQuotes()."\n"
+			."SET\n\t"
+			.$helper->wrapQuotes('LEFT_MARGIN')." = "
+			.$helper->wrapQuotes('LEFT_MARGIN')." - (".$right_key." - ".$left_key." + 1),\n\t"
+			.$helper->wrapQuotes('RIGHT_MARGIN')." = "
+			.$helper->wrapQuotes('RIGHT_MARGIN')." - (".$right_key." - ".$left_key." + 1)\n"
+			."WHERE\n\t"
+			.$helper->wrapQuotes('LEFT_MARGIN')." > ".$right_key;
 		$query->setQueryBuildParts($sql);
-		$res = $query->exec();
-		//3. Проверяем.
+		$query->exec();
 
-/*		//Теперь можно объединить последние два запроса в один, что бы не делать лишних действий.
-		$query = new Query('update');
-		/*
-		UPDATE
-			tableName
-		SET
-			`LEFT_MARGIN` = IF(`LEFT_MARGIN` > $left_key, `LEFT_MARGIN` – ($right_key - $left_key + 1), `LEFT_MARGIN`),
-			`RIGHT_MARGIN` = `RIGHT_MARGIN` – ($right_key - $left_key + 1)
-		WHERE
-			`RIGHT_MARGIN` > $right_key
-		 *
-		$sql = "UPDATE\n\t".$helper->wrapQuotes($tableName)."\nSET\n\t".$helper->wrapQuotes('LEFT_MARGIN')." = IF("
-			.$helper->wrapQuotes('LEFT_MARGIN')." > ".$left_key.", ".$helper->wrapQuotes('LEFT_MARGIN')." – ("
-			.$right_key." - ".$left_key." + 1), ".$helper->wrapQuotes('LEFT_MARGIN')."),\n\t "
-			.$helper->wrapQuotes('RIGHT_MARGIN')." = ".$helper->wrapQuotes('RIGHT_MARGIN')." – (".$right_key." - "
-			.$left_key." + 1)\nWHERE\n\t".$helper->wrapQuotes('RIGHT_MARGIN')." > ".$right_key;
-		$query->setQueryBuildParts($sql);
-		$res = $query->exec();*/
+		//3. Проверяем.
 	}
 
+	/**
+	 * Деактивирует раздел
+	 *
+	 * @api
+	 *
+	 * @param int $sectionID ID раздела
+	 *
+	 * @return DBResult
+	 */
 	public static function deactivateSection($sectionID)
 	{
-		$className = static::getClassName();
-		$tableName = static::getTableName();
 		$arUpdate = array('ACTIVE'=>false);
-		$query = new Query('update');
-		$query->setUpdateParams($arUpdate,$sectionID,$tableName,$className::getMapArray());
-		$res = $query->exec();
+
+		$res = static::updateSection($sectionID,$arUpdate);
 
 		return $res;
 	}
 
+	/**
+	 * Активирует раздел
+	 *
+	 * @api
+	 *
+	 * @param int $sectionID ID раздела
+	 *
+	 * @return DBResult
+	 */
 	public static function activateSection ($sectionID)
 	{
-		$className = static::getClassName();
-		$tableName = static::getTableName();
 		$arUpdate = array('ACTIVE'=>true);
-		$query = new Query('update');
-		$query->setUpdateParams($arUpdate,$sectionID,$tableName,$className::getMapArray());
-		$res = $query->exec();
+
+		$res = static::updateSection($sectionID,$arUpdate);
 
 		return $res;
 	}
 
-	/*
-	public static function moveSection ($arSection)
+	/**
+	 * Убирает из массива обновления параметров раздела неизменяемые поля:
+	 *
+	 * Левая граница, правая граница, уровень вложенности
+	 *
+	 * Для изменения левой и правой границы
+	 * @see static::sortSection ($sectionID, $sort=null)
+	 *
+	 * Для изменения уровня вложенности
+	 * @see static::changeParent ($sectionID, $newParentID=null)
+	 *
+	 * @param $arSection
+	 */
+	protected static function checkUpdateFields (&$arSection)
 	{
-		msDebug($arSection);
-		$helper = new SqlHelper();
-		$className = static::getClassName();
-		$tableName = static::getTableName();
-
-		//1. Ключи и уровень перемещаемого узла
-		$level = $arSection['DEPTH_LEVEL'];
-		$left_key = $arSection['LEFT_MARGIN'];
-		$right_key = $arSection['RIGHT_MARGIN'];
-
-		//2. Уровень нового родительского узла (если узел перемещается в "корень" то сразу можно подставить значение 0)
-		if ($arSection['PARENT_SECTION_ID'] > 0)
+		//Левая граница
+		if (isset($arSection['LEFT_MARGIN']))
 		{
-			$arParent = static::getInfo($arSection['PARENT_SECTION_ID']);
-			$level_up = $arParent['DEPTH_LEVEL'];
-			$near_key = $arParent['LEFT_MARGIN'];
+			unset($arSection['LEFT_MARGIN']);
 		}
-		else
+		//Правая граница
+		if (isset($arSection['RIGHT_MARGIN']))
 		{
-			$level_up = 0;
-			$near_key = 0;
+			unset($arSection['RIGHT_MARGIN']);
 		}
-
-		//3. Правый ключ узла за который мы вставляем узел (ветку)
-/*		Данный параметр, а не ключи нового родительского узла, выбираем по одной простой причине: Для обычного
-		перемещения этого ключа нам будет достаточно, а при изменении порядка узлов и переноса в "корень" дерева
-		данный параметр нам просто необходим.*
-
-		// * При изменении порядка, когда родительский узел не меняется – правый ключ узла за которым будет стоять перемещаемый;
-		//SELECT left_key, right_key FROM my_tree WHERE id = [id соседнего узла с который будет(!) выше (левее)]****
-		//Следует обратить внимание, что при поднятии узла вверх по порядку, узел выбирается не соседний, а следующий,
-		//за неимением оного (перемещаемый узел будет первым) берется левый ключ родительского узла
-		//Получаем $right_key_near и $left_key_near (для варианта изменения порядка)
-		$arSort = $className::getList(array(
-			'select' => static::getSelectFields(),
-			'filter' => array('PARENT_SECTION_ID' => $arSection['PARENT_SECTION_ID']),
-			'order' => array('SORT'=>'ASC', 'NAME'=>'ASC')
-		));
-		msDebug($arSort);
-		foreach ($arSort as $key=>$sort)
+		//Уровень вложенности
+		if (isset($arSection['DEPTH_LEVEL']))
 		{
-			if ($sort['ID']!=$arSection['ID'])
-			{
-				$near_key = $sort['RIGHT_MARGIN'];
-			}
-			else
-			{
-				break;
-			}
+			unset($arSection['DEPTH_LEVEL']);
 		}
-		msDebug($near_key);
-
-		//4. Определяем смещения:
-		//$level_up - $level + 1 = $skew_level - смещение уровня изменяемого узла;
-		$skew_level = $level_up - $level + 1;
-		//$right_key - $left_key + 1 = $skew_tree - смещение ключей дерева;
-		$skew_tree = $right_key - $left_key + 1;
-
-		//Выбираем все узлы перемещаемой ветки:
-		$query = new Query('select');
-		$sql = "SELECT ".$helper->wrapQuotes('ID')." FROM ".$helper->wrapQuotes($tableName)
-			." WHERE ".$helper->wrapQuotes('LEFT_MARGIN')." >= ".$left_key." AND ".$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$right_key;
-		$query->setQueryBuildParts($sql);
-		$res = $query->exec();
-		while($ar_res = $res->fetch())
-		{
-			$arIdEdit[] = $ar_res['ID'];
-		}
-		$id_edit = join(', ',$arIdEdit);
-		msDebug($id_edit);
-
-		//Так же требуется определить: в какую область перемещается узел, для этого сравниваем $right_key и
-		//$right_key_near, если $right_key_near больше, то узел перемещается в облась вышестоящих узлов,
-		//иначе - нижестоящих
-		if ($near_key > $right_key)
-		{
-			//Перемещаем вверх
-			msDebug('Перемещаем вверх');
-			//Определяем смещение ключей редактируемого узла $right_key_near - $left_key + 1 = $skew_edit;
-			$skew_edit = $near_key - $left_key + 1;
-
-			$query = new Query('update');
-			/*
-			UPDATE
-				my_tree
-			SET
-				`RIGHT_MARGIN` = `RIGHT_MARGIN` + $skew_tree
-			WHERE
-				`RIGHT_MARGIN` < $left_key
-				AND
-				`RIGHT_MARGIN` > $right_key_near
-			 *
-			$sql = "UPDATE ".$helper->wrapQuotes($tableName)." SET ".$helper->wrapQuotes('RIGHT_MARGIN')
-				." = ".$helper->wrapQuotes('RIGHT_MARGIN')." + ".$skew_tree." WHERE "
-				.$helper->wrapQuotes('RIGHT_MARGIN')." < ".$left_key." AND ".$helper->wrapQuotes('RIGHT_MARGIN')
-				." > ".$near_key;
-			$query->setQueryBuildParts($sql);
-			//$res = $query->exec();
-
-			$query = new Query('update');
-			/*
-			UPDATE
-				tableName
-			SET
-				`LEFT_MARGIN` = `LEFT_MARGIN` + $skew_tree
-			WHERE
-				`LEFT_MARGIN` < $left_key
-				AND
-				`LEFT_MARGIN` > $right_key_near
-			 *
-			$sql = "UPDATE ".$helper->wrapQuotes($tableName)." SET ".$helper->wrapQuotes('LEFT_MARGIN')
-				." = ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$skew_tree." WHERE ".$helper->wrapQuotes('LEFT_MARGIN')
-				." < ".$left_key." AND ".$helper->wrapQuotes('LEFT_MARGIN')." > ".$near_key;
-			$query->setQueryBuildParts($sql);
-			//$res = $query->exec();
-
-			//Теперь можно переместить ветку:
-			$query = new Query('update');
-			/*
-			UPDATE
-				tableName
-			SET
-				`LEFT_MARGIN` = `LEFT_MARGIN` + $skew_edit,
-				`RIGHT_MARGIN` = `RIGHT_MARGIN` + $skew_edit,
-				`DEPTH_LEVEL` = `DEPTH_LEVEL` + $skew_level
-			WHERE
-				`ID` IN ($id_edit)
-			 *
-			$sql = "UPDATE ".$helper->wrapQuotes($tableName)." SET ".$helper->wrapQuotes('LEFT_MARGIN')." = "
-				.$helper->wrapQuotes('LEFT_MARGIN')." + ".$skew_edit.", ".$helper->wrapQuotes('RIGHT_MARGIN')." = "
-				.$helper->wrapQuotes('RIGHT_MARGIN')." + ".$skew_edit.", ".$helper->wrapQuotes('DEPTH_LEVEL')." = "
-				.$helper->wrapQuotes('DEPTH_LEVEL')." + ".$skew_level." WHERE ".$helper->wrapQuotes('ID')
-				." IN (".$id_edit.")";
-			$query->setQueryBuildParts($sql);
-			//$res = $query->exec();
-
-			/*
-			$query = new Query('update');
-			/*
-			UPDATE
-				tableName
-			SET
-				`RIGHT_MARGIN` = IF(`LEFT_MARGIN` >= $left_key, `RIGHT_MARGIN` + $skew_edit, IF(`RIGHT_MARGIN` < $left_key, `RIGHT_MARGIN` + $skew_tree, `RIGHT_MARGIN`)),
-				`DEPTH_LEVEL` = IF(`LEFT_MARGIN` >= $left_key, `DEPTH_LEVEL` + $skew_level, `DEPTH_LEVEL`),
-				`LEFT_MARGIN` = IF(`LEFT_MARGIN` >= $left_key, `LEFT_MARGIN` + $skew_edit, IF(`LEFT_MARGIN` > $right_key_near, `LEFT_MARGIN` + $skew_tree, `LEFT_MARGIN`))
-			WHERE
-				`RIGHT_MARGIN` > $right_key_near
-				AND
-				`LEFT_MARGIN` < $right_key
-			*
-			$sql = "UPDATE ".$helper->wrapQuotes($tableName)." SET ".$helper->wrapQuotes('RIGHT_MARGIN')." = IF("
-				.$helper->wrapQuotes('LEFT_MARGIN')." >= ".$left_key.", ".$helper->wrapQuotes('RIGHT_MARGIN')." + "
-				.$skew_edit.", IF(".$helper->wrapQuotes('RIGHT_MARGIN')." < ".$left_key.", "
-				.$helper->wrapQuotes('RIGHT_MARGIN')." + ".$skew_tree.", ".$helper->wrapQuotes('RIGHT_MARGIN').")), "
-				.$helper->wrapQuotes('DEPTH_LEVEL')." = IF(".$helper->wrapQuotes('LEFT_MARGIN')." >= ".$left_key.", "
-				.$helper->wrapQuotes('DEPTH_LEVEL')." + ".$skew_level.", ".$helper->wrapQuotes('DEPTH_LEVEL')."), "
-				.$helper->wrapQuotes('LEFT_MARGIN')." = IF(".$helper->wrapQuotes('LEFT_MARGIN')." >= ".$left_key.", "
-				.$helper->wrapQuotes('LEFT_MARGIN')." + ".$skew_edit.", IF(".$helper->wrapQuotes('LEFT_MARGIN')." > "
-				.$near_key.", ".$helper->wrapQuotes('LEFT_MARGIN')." + ".$skew_tree.", "
-				.$helper->wrapQuotes('LEFT_MARGIN').")) WHERE ".$helper->wrapQuotes('RIGHT_MARGIN')." > "
-				.$near_key." AND ".$helper->wrapQuotes('LEFT_MARGIN')." < ".$right_key;
-			$query->setQueryBuildParts($sql);
-			$res = $query->exec();
-			*
-/*			В данной команде особое внимание нужно уделить порядку изменения полей таблицы, самым последним полем должно
-			изменяться поле левого ключа (left_key), так как его значение является условием для изменения других полей.
-			Замечу, что при использовании этой команды, выбирать узлы перемещаемой ветки не нужно.*
-
-		}
-		else
-		{
-			//Перемещаем вниз
-			msDebug('Перемещаем вниз');
-/*			Опять же порядок не имеет значения, поэтому просто делаем команды на обновление. Правда хочу обратить
-			внимание на тот факт, что в условии: "левый ключ узла меньше $near_key" узел в котором находится
-			$near_key тоже попадает в диапазон изменения, следует иметь ввиду, что при сравнении не однотипных
-			ключей (правый <-> левый) текущий узел попадает или не попадает в диапазон без использования равенства в
-			условии.*
-			//Определяем смещение ключей редактируемого узла $right_key_near - $left_key + 1 - $skew_tree = $skew_edit.
-			$skew_edit = $near_key - $left_key + 1 - $skew_tree;
-
-			$query = new Query('update');
-			/*
-			UPDATE
-				tableName
-			SET
-				`RIGHT_MARGIN` = `RIGHT_MARGIN` - $skew_tree
-			WHERE
-				`RIGHT_MARGIN` > $right_key
-				AND
-				`RIGHT_MARGIN` <= $right_key_near
-			 *
-			$sql = "UPDATE ".$helper->wrapQuotes($tableName)." SET ".$helper->wrapQuotes('RIGHT_MARGIN')." = "
-				.$helper->wrapQuotes('RIGHT_MARGIN')." - ".$skew_tree." WHERE ".$helper->wrapQuotes('RIGHT_MARGIN')
-				." > ".$right_key." AND ".$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$near_key;
-			$query->setQueryBuildParts($sql);
-			//$res = $query->exec();
-
-			$query = new Query('update');
-			/*
-			UPDATE
-				tableName
-			SET
-				`LEFT_MARGIN` = `LEFT_MARGIN` - $skew_tree
-			WHERE
-				`LEFT_MARGIN` < $left_key
-				AND
-				`LEFT_MARGIN` > $right_key_near
-			 *
-			$sql = "UPDATE ".$helper->wrapQuotes($tableName)." SET ".$helper->wrapQuotes('LEFT_MARGIN')." = "
-				.$helper->wrapQuotes('LEFT_MARGIN')." - ".$skew_tree." WHERE ".$helper->wrapQuotes('LEFT_MARGIN')
-				." < ".$left_key." AND ".$helper->wrapQuotes('LEFT_MARGIN')." > ".$near_key;
-			$query->setQueryBuildParts($sql);
-			//$res = $query->exec();
-
-			//Теперь можно переместить ветку:
-			$query = new Query('update');
-			/*
-			UPDATE
-				tableName
-			SET
-				`LEFT_MARGIN` = `LEFT_MARGIN` + $skew_edit,
-				`RIGHT_MARGIN` = `RIGHT_MARGIN` + $skew_edit,
-				`DEPTH_LEVEL` = `DEPTH_LEVEL` + $skew_level
-			WHERE
-				`ID` IN ($id_edit)
-			 *
-			$sql = "UPDATE ".$helper->wrapQuotes($tableName)." SET ".$helper->wrapQuotes('LEFT_MARGIN')." = "
-				.$helper->wrapQuotes('LEFT_MARGIN')." + ".$skew_edit.", ".$helper->wrapQuotes('RIGHT_MARGIN')." = "
-				.$helper->wrapQuotes('RIGHT_MARGIN')." + ".$skew_edit.", ".$helper->wrapQuotes('DEPTH_LEVEL')." = "
-				.$helper->wrapQuotes('DEPTH_LEVEL')." + ".$skew_level." WHERE ".$helper->wrapQuotes('ID')
-				." IN (".$id_edit.")";
-			$query->setQueryBuildParts($sql);
-			//$res = $query->exec();
-
-			//После оптимизации этих запросов получаем всего один:
-/*			$query = new Query('update');
-			/*
-			UPDATE
-				tableName
-			SET
-				`LEFT_MARGIN` = IF(`RIGHT_MARGIN` <= $right_key, `LEFT_MARGIN` + $skew_edit, IF(`LEFT_MARGIN` > $right_key, `LEFT_MARGIN` - $skew_tree, `LEFT_MARGIN`)),
-				`DEPTH_LEVEL` = IF(`RIGHT_MARGIN` <= $right_key, `DEPTH_LEVEL` + $skew_level, `DEPTH_LEVEL`),
-				`RIGHT_MARGIN` = IF(`RIGHT_MARGIN` <= $right_key, `RIGHT_MARGIN` + $skew_edit, IF(`RIGHT_MARGIN` <= $right_key_near, `RIGHT_MARGIN` - $skew_tree, `RIGHT_MARGIN`))
-			WHERE
-				`RIGHT_MARGIN` > $left_key
-				AND
-				`LEFT_MARGIN` <= $right_key_near
-			*
-			$sql = "UPDATE ".$helper->wrapQuotes($tableName)." SET ".$helper->wrapQuotes('LEFT_MARGIN')." = IF("
-				.$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$right_key.", ".$helper->wrapQuotes('LEFT_MARGIN')." + "
-				.$skew_edit.", IF(".$helper->wrapQuotes('LEFT_MARGIN')." > ".$right_key.", "
-				.$helper->wrapQuotes('LEFT_MARGIN')." - ".$skew_tree.", ".$helper->wrapQuotes('LEFT_MARGIN').")), "
-				.$helper->wrapQuotes('DEPTH_LEVEL')." = IF(".$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$right_key.", "
-				.$helper->wrapQuotes('DEPTH_LEVEL')." + ".$skew_level.", ".$helper->wrapQuotes('DEPTH_LEVEL')."), "
-				.$helper->wrapQuotes('RIGHT_MARGIN')." = IF(".$helper->wrapQuotes('RIGHT_MARGIN')." <= ".$right_key.", "
-				.$helper->wrapQuotes('RIGHT_MARGIN')." + ".$skew_edit.", IF(".$helper->wrapQuotes('RIGHT_MARGIN')." <= "
-				.$near_key.", ".$helper->wrapQuotes('RIGHT_MARGIN')." - ".$skew_tree.", ".$helper->wrapQuotes('RIGHT_MARGIN')
-				.")) WHERE ".$helper->wrapQuotes('RIGHT_MARGIN')." > ".$left_key." AND ".$helper->wrapQuotes('LEFT_MARGIN')
-				." <= ".$near_key;
-			$query->setQueryBuildParts($sql);
-			$res = $query->exec();
-			//Замечания те же, что и при перемещении ветки вверх по дереву.*
-
-		}
-
 	}
-	*/
 
-	private static function checkFields ($arSection=null)
+	/**
+	 * Проверяет наличие обязательных полей, удаляет неизменяемые поля. Возвращает измененный массив полей раздела
+	 *
+	 * @param null|array $arSection
+	 *
+	 * @return null|array
+	 */
+	protected static function checkAddFields ($arSection=null)
 	{
 		if (is_null($arSection) || !isset($arSection['NAME']) || strlen($arSection['NAME'])<=0)
 		{
 			return false;
 		}
-		if (!isset($arSection['ACTIVE']) || !is_bool($arSection['ACTIVE']))
+		if (isset($arSection['ID']))
 		{
-			$arSection['ACTIVE'] = true;
+			unset($arSection['ID']);
 		}
-		if (!isset($arSection['PARENT_SECTION_ID']) || intval($arSection['PARENT_SECTION_ID'])<0)
+		if (isset($arSection['LEFT_MARGIN']))
 		{
-			$arSection['PARENT_SECTION_ID'] = 0;
+			unset($arSection['LEFT_MARGIN']);
 		}
-		if (!isset($arParams['SORT']) || intval($arParams['SORT'])<=0)
+		if (isset($arSection['RIGHT_MARGIN']))
 		{
-			$arParams['SORT'] = 500;
+			unset($arSection['RIGHT_MARGIN']);
+		}
+		if (isset($arSection['DEPTH_LEVEL']))
+		{
+			unset($arSection['DEPTH_LEVEL']);
 		}
 
 		return $arSection;
 	}
 
+	/**
+	 * Проверка целостности таблицы. Если все в порядке, возвращает false.
+	 * Если есть проблемы, возвращает массив проблемных записей по 6 проверкам
+	 *
+	 * @api
+	 *
+	 * @return array|bool Массив проблеммных записей, либо false
+	 */
 	public static function checkTable ()
 	{
 		/* ОСНОВНЫЕ ПРАВИЛА ХРАНЕНИЯ ДЕРЕВА КАТАЛОГОВ
@@ -810,36 +1307,30 @@ class Sections
 		 * 6. Ключи ВСЕГДА уникальны, вне зависимости от того правый он или левый;
 		 */
 		$bError = false;
-		//$className = static::getClassName();
-		//TODO: Невозможно сравнивать с полем. Нужно доделать, чтобы можно было. См. коммент ниже
-		/*
-		$res1 = $className::getList(array(
-			'select' => array('ID'),
-			'filter' => array('LEFT_MARGIN'=>'RIGHT_MARGIN')
-		));
-		*/
-		$helper = new SqlHelper();
+		$arResult = array();
+		$helper = new SqlHelper(static::getTableName());
+		$className = static::getClassName();
+
 		//1. Левый ключ ВСЕГДА меньше правого;
 		//Если все правильно то результата работы запроса не будет, иначе, получаем список идентификаторов неправильных строк;
-		$sql1 = "SELECT ".$helper->wrapQuotes('ID')." FROM ".$helper->wrapQuotes(static::getTableName())." WHERE "
-			.$helper->wrapQuotes('LEFT_MARGIN')." >= ".$helper->wrapQuotes('RIGHT_MARGIN');
-		$query1 = new Query('select');
-		$query1->setQueryBuildParts($sql1);
-		$res1 = $query1->exec();
-		if ($res1->getResult())
+		$res1 = $className::getList(array(
+			'select' => array('ID'),
+			'filter' => array('>=LEFT_MARGIN'=>'FIELD_RIGHT_MARGIN')
+		));
+		foreach ($res1 as $ar_res1)
 		{
-			while ($ar_res1 = $res1->fetch())
-			{
-				$arResult['RULE1'][] = $ar_res1;
-			}
-			$bError = true;
+			$arResult['RULE1'][] = $ar_res1;
 		}
 
 		//2. Наименьший левый ключ ВСЕГДА равен 1;
 		//3. Наибольший правый ключ ВСЕГДА равен двойному числу узлов;
 		//Получаем количество записей (узлов), минимальный левый ключ и максимальный правый ключ, проверяем значения.
-		$sql2 = "SELECT COUNT(".$helper->wrapQuotes('ID').") as COUNT, MIN(".$helper->wrapQuotes('LEFT_MARGIN')
-			.") as MIN, MAX(".$helper->wrapQuotes('RIGHT_MARGIN').") as MAX FROM ".$helper->wrapQuotes(static::getTableName());
+		$sql2 = "SELECT\n\t"
+			.$helper->getCountFunction('ID','COUNT').",\n\t"
+			.$helper->getMinFunction('LEFT_MARGIN','MIN').",\n\t"
+			.$helper->getMaxFunction('RIGHT_MARGIN','MAX')."\n"
+			."FROM\n\t"
+			.$helper->wrapTableQuotes();
 		$query2 = new Query('select');
 		$query2->setQueryBuildParts($sql2);
 		$res2 = $query2->exec();
@@ -866,36 +1357,45 @@ class Sections
 			$arResult['RULE3'] = false;
 		}
 
+
 		//4. Разница между правым и левым ключом ВСЕГДА нечетное число;
 		//Если все правильно то результата работы запроса не будет, иначе, получаем список идентификаторов неправильных строк;
-		$sql4 = "SELECT ".$helper->wrapQuotes('ID').", MOD((".$helper->wrapQuotes('RIGHT_MARGIN')." - "
-			.$helper->wrapQuotes('LEFT_MARGIN').") / 2) AS REMAINDER FROM ".$helper->wrapQuotes(static::getTableName())
-			." WHERE REMAINDER = 0";
+		$sql4 = "SELECT\n\t"
+			.$helper->wrapQuotes('ID').",\n\t"
+			."MOD((".$helper->wrapFieldQuotes('RIGHT_MARGIN')." - ".$helper->wrapFieldQuotes('LEFT_MARGIN')."), 2) AS REMAINDER\n "
+			."FROM\n\t"
+			.$helper->wrapTableQuotes()."\n"
+			."WHERE\n\t"
+			."MOD((".$helper->wrapFieldQuotes('RIGHT_MARGIN')." - ".$helper->wrapFieldQuotes('LEFT_MARGIN')."), 2) = 0";
 		$query4 = new Query('select');
 		$query4->setQueryBuildParts($sql4);
 		$res4 = $query4->exec();
 		if ($res4->getResult())
 		{
-			$bError = true;
 			while ($ar_res4 = $res4->fetch())
 			{
+				$bError = true;
 				$arResult['RULE4'][] = $ar_res4;
 			}
 		}
 
 		//5. Если уровень узла нечетное число то тогда левый ключ ВСЕГДА нечетное число, то же самое и для четных чисел;
 		//Если все правильно то результата работы запроса не будет, иначе, получаем список идентификаторов неправильных строк;
-		$sql5 = "SELECT ".$helper->wrapQuotes('ID').", MOD((".$helper->wrapQuotes('LEFT_MARGIN')." – "
-			.$helper->wrapQuotes('DEPTH_LEVEL')." + 2) / 2) AS REMAINDER FROM "
-			.$helper->wrapQuotes(static::getTableName())." WHERE REMAINDER = 1";
+		$sql5 = "SELECT\n\t"
+			.$helper->wrapQuotes('ID').",\n\t"
+			."MOD((".$helper->wrapFieldQuotes('LEFT_MARGIN')." - ".$helper->wrapFieldQuotes('DEPTH_LEVEL')." + 2), 2) AS REMAINDER \n"
+			."FROM\n\t"
+			.$helper->wrapTableQuotes()."\n"
+			."WHERE\n\t"
+			."MOD((".$helper->wrapFieldQuotes('LEFT_MARGIN')." - ".$helper->wrapFieldQuotes('DEPTH_LEVEL')." + 2), 2) = 1";
 		$query5 = new Query('select');
 		$query5->setQueryBuildParts($sql5);
 		$res5 = $query5->exec();
 		if ($res5->getResult())
 		{
-			$bError = true;
 			while ($ar_res5 = $res5->fetch())
 			{
+				$bError = true;
 				$arResult['RULE5'][] = $ar_res5;
 			}
 		}
@@ -915,23 +1415,31 @@ class Sections
 			Если все правильно то результата работы запроса не будет, иначе, получаем список идентификаторов
 			неправильных строк;
 		 */
-		$sql6 = "SELECT t1.".$helper->wrapQuotes('ID').", COUNT(t1.".$helper->wrapQuotes('ID').") AS rep, MAX(t3."
-			.$helper->wrapQuotes('RIGHT_MARGIN').") AS max_right FROM ".$helper->wrapQuotes(static::getTableName())
-			." AS t1, ".$helper->wrapQuotes(static::getTableName())." AS t2, "
-			.$helper->wrapQuotes(static::getTableName())." AS t3 WHERE t1.".$helper->wrapQuotes('LEFT_MARGIN')
-			." <> t2.".$helper->wrapQuotes('LEFT_MARGIN')." AND t1.".$helper->wrapQuotes('LEFT_MARGIN')
-			." <> t2.".$helper->wrapQuotes('RIGHT_MARGIN')." AND t1.".$helper->wrapQuotes('RIGHT_MARGIN')
-			." <> t2.".$helper->wrapQuotes('LEFT_MARGIN')." AND t1.".$helper->wrapQuotes('RIGHT_MARGIN')
-			." <> t2.".$helper->wrapQuotes('RIGHT_MARGIN')." GROUP BY t1.".$helper->wrapQuotes('ID')
-			." HAVING max_right <> SQRT(4 * rep + 1) + 1";
+		$sql6 = "SELECT\n\t"
+			."t1.".$helper->wrapQuotes('ID').",\n\t"
+			."COUNT(t1.".$helper->wrapQuotes('ID').") AS rep,\n\t"
+			."MAX(t3.".$helper->wrapQuotes('RIGHT_MARGIN').") AS max_right\n"
+			."FROM\n\t"
+			.$helper->wrapTableQuotes()." AS t1,\n\t"
+			.$helper->wrapTableQuotes()." AS t2,\n\t"
+			.$helper->wrapTableQuotes()." AS t3\n"
+			."WHERE\n\t"
+			."t1.".$helper->wrapQuotes('LEFT_MARGIN')." <> t2.".$helper->wrapQuotes('LEFT_MARGIN')." AND\n\t"
+			."t1.".$helper->wrapQuotes('LEFT_MARGIN')." <> t2.".$helper->wrapQuotes('RIGHT_MARGIN')." AND\n\t"
+			."t1.".$helper->wrapQuotes('RIGHT_MARGIN')." <> t2.".$helper->wrapQuotes('LEFT_MARGIN')." AND\n\t"
+			."t1.".$helper->wrapQuotes('RIGHT_MARGIN')." <> t2.".$helper->wrapQuotes('RIGHT_MARGIN')."\n"
+			."GROUP BY\n\t"
+			."t1.".$helper->wrapQuotes('ID')."\n"
+			."HAVING\n\t"
+			."max_right <> SQRT(4 * rep + 1) + 1";
 		$query6 = new Query('select');
 		$query6->setQueryBuildParts($sql6);
 		$res6 = $query6->exec();
 		if ($res6->getResult())
 		{
-			$bError = true;
 			while ($ar_res6 = $res6->fetch())
 			{
+				$bError = true;
 				$arResult['RULE6'][] = $ar_res6;
 			}
 		}

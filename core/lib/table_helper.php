@@ -15,6 +15,27 @@ use \MSergeev\Core\Entity;
 
 class TableHelper
 {
+	public static function primaryField ($arParams=array())
+	{
+		if (isset($arParams['field']))
+		{
+			$field_name = $arParams['field'];
+			unset($arParams['field']);
+		}
+		else
+		{
+			$field_name = "ID";
+		}
+		$arResult = array(
+			'primary' => true,
+			'autocomplete' => true,
+			'title' => 'Ключ'
+		);
+		self::parseParams($arResult,$arParams);
+
+		return new Entity\IntegerField($field_name,$arResult);
+	}
+
 	/**
 	 * Возвращает сущность Entity\BooleanField для поля таблицы 'ACTIVE' (Активность)
 	 * Если указаны дополнительные параметры, они также добавляются к свойствам поля
@@ -27,14 +48,23 @@ class TableHelper
 	 */
 	public static function activeField($arParams=array())
 	{
+		if (isset($arParams['field']))
+		{
+			$field_name = $arParams['field'];
+			unset($arParams['field']);
+		}
+		else
+		{
+			$field_name = "ACTIVE";
+		}
 		$arResult = array(
 			'required' => true,
 			'default_value' => true,
 			'title' => 'Активность'
 		);
-		$arResult = self::parseParams($arResult,$arParams);
+		self::parseParams($arResult,$arParams);
 
-		return new Entity\BooleanField('ACTIVE',$arResult);
+		return new Entity\BooleanField($field_name,$arResult);
 	}
 
 	/**
@@ -49,14 +79,23 @@ class TableHelper
 	 */
 	public static function sortField($arParams=array())
 	{
+		if (isset($arParams['field']))
+		{
+			$field_name = $arParams['field'];
+			unset($arParams['field']);
+		}
+		else
+		{
+			$field_name = "SORT";
+		}
 		$arResult = array(
 			'required' => true,
 			'default_value' => 500,
 			'title' => 'Сортировка'
 		);
-		$arResult = self::parseParams($arResult,$arParams);
+		self::parseParams($arResult,$arParams);
 
-		return new Entity\IntegerField('SORT',$arResult);
+		return new Entity\IntegerField($field_name,$arResult);
 	}
 
 	/**
@@ -67,8 +106,18 @@ class TableHelper
 	 *
 	 * @return array Объединенный массив параметров сущности
 	 */
-	private static function parseParams (array $arResult,array $arParams)
+	private static function parseParams (array &$arResult,array $arParams)
 	{
+		if (isset($arParams['primary']))
+		{
+			$arResult['primary'] = $arParams['primary'];
+			unset($arParams['primary']);
+		}
+		if (isset($arParams['autocomplete']))
+		{
+			$arResult['autocomplete'] = $arParams['autocomplete'];
+			unset($arParams['autocomplete']);
+		}
 		if (isset($arParams['required']))
 		{
 			$arResult['required'] = $arParams['required'];
@@ -88,7 +137,5 @@ class TableHelper
 		{
 			$arResult = array_merge($arResult,$arParams);
 		}
-
-		return $arResult;
 	}
 }

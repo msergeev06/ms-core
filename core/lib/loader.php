@@ -50,10 +50,78 @@ class Loader {
 					if ($file != "." && $file != ".." && $file != "packages.php")
 					{
 						self::$arPackage[$file] = array();
+						if (file_exists(self::$packagesRoot.$file.'/version.php'))
+						{
+							self::$arPackage[$file]['INSTALLED_VERSION'] = include(self::$packagesRoot.$file.'/version.php');
+						}
 					}
 				}
 				@closedir($dh);
 			}
+		}
+	}
+
+	/**
+	 * Возвращает номер версии пакета, если она задана, либо false
+	 *
+	 * @param string $packageName Имя пакета
+	 *
+	 * @return string|bool Строковое значение версии, либо false
+	 */
+	public static function getPackageVersion ($packageName="")
+	{
+		if ($packageName!="" && isset(self::$arPackage[$packageName]['INSTALLED_VERSION']['VERSION']))
+		{
+			return self::$arPackage[$packageName]['INSTALLED_VERSION']['VERSION'];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Возвращает дату версии пакета, если она задана, либо false
+	 *
+	 * @param string $packageName Имя пакета
+	 *
+	 * @return string|bool Строковое представление даты версии пакета, либо false
+	 */
+	public static function getPackageVersionDate ($packageName="")
+	{
+		if ($packageName!="" && isset(self::$arPackage[$packageName]['INSTALLED_VERSION']['VERSION_DATE']))
+		{
+			return self::$arPackage[$packageName]['INSTALLED_VERSION']['VERSION_DATE'];
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	/**
+	 * Возвращает данные о версии всех установленных пакетов, либо false
+	 *
+	 * @return array|bool
+	 */
+	public static function getArrayPackagesVersions ()
+	{
+		$arVersions = array();
+		foreach (self::$arPackage as $package=>$arData)
+		{
+			if (isset($arData['INSTALLED_VERSION']))
+			{
+				$arVersions[$package] = $arData['INSTALLED_VERSION'];
+			}
+		}
+
+		if (!empty($arVersions))
+		{
+			return $arVersions;
+		}
+		else
+		{
+			return false;
 		}
 	}
 

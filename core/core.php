@@ -77,3 +77,15 @@ if (Lib\Config::getConfig('USE_MAJORDOMO') && Lib\Loader::issetPackage('majordom
 		\MSergeev\Packages\Majordomo\Lib\Http::checkAutorize();
 	}
 }
+
+//Проверяем используется ли сборка KuzmaHome. Если да и пакет KuzmaHome установлен, подключаем его
+if (Lib\Config::getConfig('USE_KUZMAHOME') && Lib\Loader::issetPackage('kuzmahome'))
+{
+	Lib\Loader::IncludePackage('kuzmahome');
+
+	if (Lib\Config::getConfig('HTTP_AUTH'))
+	{
+		//Проверяем необходимость http-авторизации и при необходимости предлагаем авторизоваться
+		\MSergeev\Packages\KuzmaHome\Lib\Http::checkAutorize();
+	}
+}

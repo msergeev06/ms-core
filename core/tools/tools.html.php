@@ -47,24 +47,502 @@ function InputType($strType, $strName, $strValue, $strCmp, $strPrintValue=false,
 		}
 	}
 	$bLabel = false;
-	if ($strType == 'radio')
+	if ($strType == 'radio'/* || $strType == 'checkbox'*/)
 		$bLabel = true;
 	return ($bLabel? '<label>': '').'<input type="'.$strType.'" '.$field1.' name="'.$strName.'" id="'.($strId <> ''? $strId : $strName).'" value="'.$strValue.'"'.
-	($bCheck? ' checked':'').'>'.($strPrintValue? $strValue:$strPrint).($bLabel? '</label>': '');
+	($bCheck? ' checked':'').'> '.($strPrintValue? $strValue:$strPrint).($bLabel? '</label>': '');
+}
+
+function TextArea ($strName, $strValue, $field1='',$strId='')
+{
+	if ($strId=='')
+	{
+		$strId = $strName;
+	}
+
+	return '<textarea name="'.$strName.'" id="'.$strId.'" '.$field1.'>'.$strValue.'</textarea>';
+}
+
+
+/**
+ * Returns HTML "input" type "text"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputText($strName, $strValue, $field1="", $strId="")
+{
+	return InputType ('text', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "email"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param bool          $multiple       Является ли поле множественным
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputEmail($strName, $strValue, $multiple=false, $field1="", $strId="")
+{
+	if ($multiple===true)
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='multiple';
+	}
+	return InputType ('email', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "tel"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputTel($strName, $strValue, $field1="", $strId="")
+{
+	return InputType ('tel', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "number"
+ *
+ * @param string            $strName        input name
+ * @param string            $strValue       input value
+ * @param bool|int|float    $min            Минимальное значение числа
+ * @param bool|int|float    $max            Максимальное значение числа
+ * @param bool|int|float    $step           Шаг числа, также указывает возможное количество знаков после запятой
+ * @param string            $field1         Дополнительный вывод данных для input
+ * @param string            $strId          input id
+ *
+ * @return string
+ */
+function InputNumber($strName, $strValue, $min=false, $max=false, $step=false, $field1="", $strId="")
+{
+	if ($min!==false)
+	{
+		if ($field1 != '')
+		{
+			$field1 .= ' ';
+		}
+		$field1.='min="'.$min.'"';
+	}
+	if ($max!==false)
+	{
+		if ($field1 != '')
+		{
+			$field1 .= ' ';
+		}
+		$field1.='max="'.$max.'"';
+	}
+	if ($step!==false)
+	{
+		if ($field1 != '')
+		{
+			$field1 .= ' ';
+		}
+		$field1.='step="'.$step.'"';
+	}
+	return InputType ('number', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "password"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputPassword($strName, $strValue, $field1="", $strId="")
+{
+	return InputType ('password', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "date"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $min            Минимальное значение даты
+ * @param string        $max            Максимальное значение даты
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputDate($strName, $strValue, $min='YYYY-MM-DD', $max='YYYY-MM-DD', $field1="", $strId="")
+{
+	if ($min===false)
+	{
+		$min='YYYY-MM-DD';
+	}
+	if ($max===false)
+	{
+		$max='YYYY-MM-DD';
+	}
+	if ($min!='YYYY-MM-DD' && Lib\DateHelper::checkDate($min))
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='min="'.$min.'"';
+	}
+	if ($max!='YYYY-MM-DD' && Lib\DateHelper::checkDate($max))
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='max="'.$max.'"';
+	}
+	$dateHelper = new Lib\DateHelper();
+	if (strpos($strValue,'.')!==false)
+	{
+		$strValue = $dateHelper->convertDateToDB($strValue);
+	}
+	return InputType ('date', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "time"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $min            Минимальное значение времени
+ * @param string        $max            Максимальное значение времени
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputTime($strName, $strValue, $min='00:00:00', $max='23:59:59', $field1="", $strId="")
+{
+	if ($min===false)
+	{
+		$min='00:00:00';
+	}
+	if ($max===false)
+	{
+		$max='23:59:59';
+	}
+	if ($field1!='')
+	{
+		$field1.=' ';
+	}
+	$field1.='min="'.$min.'"';
+	if ($field1!='')
+	{
+		$field1.=' ';
+	}
+	$field1.='max="'.$max.'"';
+	return InputType ('time', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "datetime"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $min            Минимальное значение даты
+ * @param string        $max            Максимальное значение даты
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputDateTime($strName, $strValue, $min='YYYY-MM-DDTHH:II:SS', $max='YYYY-MM-DDTHH:II:SS', $field1="", $strId="")
+{
+	if ($min===false)
+	{
+		$min='YYYY-MM-DDTHH:II:SS';
+	}
+	if ($max===false)
+	{
+		$max='YYYY-MM-DDTHH:II:SS';
+	}
+	if ($min!='YYYY-MM-DDTHH:II:SS')
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='min="'.$min.'"';
+	}
+	if ($max!='YYYY-MM-DDTHH:II:SS')
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='max="'.$max.'"';
+	}
+	return InputType ('datetime', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "datetime-local"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $min            Минимальное значение даты
+ * @param string        $max            Максимальное значение даты
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputDateTimeLocal($strName, $strValue, $min='YYYY-MM-DDTHH:II:SS', $max='YYYY-MM-DDTHH:II:SS', $field1="", $strId="")
+{
+	if ($min===false)
+	{
+		$min='YYYY-MM-DDTHH:II:SS';
+	}
+	if ($max===false)
+	{
+		$max='YYYY-MM-DDTHH:II:SS';
+	}
+	if ($min!='YYYY-MM-DDTHH:II:SS')
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='min="'.$min.'"';
+	}
+	if ($max!='YYYY-MM-DDTHH:II:SS')
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='max="'.$max.'"';
+	}
+	return InputType ('datetime-local', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "month"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $min            Минимальное значение даты
+ * @param string        $max            Максимальное значение даты
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputMonth($strName, $strValue, $min="YYYY-MM", $max="YYYY-MM", $field1="", $strId="")
+{
+	if ($min===false)
+	{
+		$min='YYYY-MM';
+	}
+	if ($max===false)
+	{
+		$max='YYYY-MM';
+	}
+	if ($min!='YYYY-MM')
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='min="'.$min.'"';
+	}
+	if ($max!='YYYY-MM')
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='max="'.$max.'"';
+	}
+	return InputType ('month', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "week"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $min            Минимальное значение даты
+ * @param string        $max            Максимальное значение даты
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputWeek($strName, $strValue, $min="YYYY-W", $max="YYYY-W", $field1="", $strId="")
+{
+	if ($min===false)
+	{
+		$min='YYYY-W';
+	}
+	if ($max===false)
+	{
+		$max='YYYY-W';
+	}
+	if ($min!='YYYY-W')
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='min="'.$min.'"';
+	}
+	if ($max!='YYYY-W')
+	{
+		if ($field1!='')
+		{
+			$field1.=' ';
+		}
+		$field1.='max="'.$max.'"';
+	}
+	return InputType ('week', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "search"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputSearch($strName, $strValue, $field1="", $strId="")
+{
+	return InputType ('search', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "color"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputColor($strName, $strValue, $field1="", $strId="")
+{
+	return InputType ('color', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "url"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputUrl($strName, $strValue, $field1="", $strId="")
+{
+	return InputType ('url', $strName, $strValue, '', false, '', $field1, $strId);
+}
+
+/**
+ * Returns HTML "input" type "range"
+ *
+ * @param string        $strName        input name
+ * @param string        $strValue       input value
+ * @param int|float     $min            Минимальное значение диапазона
+ * @param int|float     $max            Максимальное значение диапазона
+ * @param int|float     $step           Шаг числа, также указывает возможное количество знаков после запятой
+ * @param string        $field1         Дополнительный вывод данных для input
+ * @param string        $strId          input id
+ *
+ * @return string
+ */
+function InputRange($strName, $strValue, $min, $max, $step=1, $field1="", $strId="")
+{
+	if ($field1!='')
+	{
+		$field1.=' ';
+	}
+	$field1.='min="'.$min.'" max="'.$max.'"';
+	$field1.=' step="'.$step.'"';
+	$field1.=' oninput="showVal_'.$strName.'(this.value)" onchange="showVal_'.$strName.'(this.value)"';
+	$return = InputType ('range', $strName, $strValue, '', false, '', $field1, $strId);
+	$return .= '<span id="range-info-'.$strName.'">'.$strValue.'</span>'
+		.'<script>function showVal_'.$strName.'(val){document.getElementById("range-info-'.$strName.'").innerHTML=val;'
+		.'}</script>';
+
+	return $return;
+}
+
+function InputFile($strName, $strValue, $field1="", $strId="")
+{
+	return InputType('file',$strName, $strValue, '', false, '', $field1, $strId);
 }
 
 /**
  * Returns HTML "select"
  *
- * @param string    $strBoxName     Input name
- * @param array     $arValues       Array with items
- * @param string    $strDetText     Empty item text
- * @param string    $strSelectedVal Selected item value
- * @param string    $field1         Additional attributes
+ * @param string        $strBoxName     Input name
+ * @param array         $arValues       Array with items
+ * @param string        $strDetText     Empty item text
+ * @param string|int    $strSelectedVal Selected item value
+ * @param string        $field1         Additional attributes
+ *
+ * @throws Exception\ArgumentTypeException Если параметры неверных типов
+ *
  * @return string
  */
 function SelectBox($strBoxName, $arValues, $strDetText = "", $strSelectedVal = "null", $field1="class=\"typeselect\"")
 {
+	try
+	{
+		if (!is_string($strBoxName))
+		{
+			throw new Exception\ArgumentTypeException('$strBoxName','string');
+		}
+		if (!is_array($arValues))
+		{
+			throw new Exception\ArgumentTypeException('$arValues','array');
+		}
+		if (!is_string($strDetText))
+		{
+			throw new Exception\ArgumentTypeException('$strDetText','string');
+		}
+		if (!is_string($strSelectedVal) && !is_numeric($strSelectedVal))
+		{
+			throw new Exception\ArgumentTypeException('$strSelectedVal','string');
+		}
+		if (!is_string($field1))
+		{
+			throw new Exception\ArgumentTypeException('$field1','string');
+		}
+	}
+	catch (Exception\ArgumentTypeException $e)
+	{
+		die($e->showException());
+	}
+
 	$strReturnBox = "<select ".$field1." name=\"".$strBoxName."\" id=\"".$strBoxName."\">";
 	if ($strDetText <> '')
 	{
@@ -95,9 +573,20 @@ function SelectBox($strBoxName, $arValues, $strDetText = "", $strSelectedVal = "
 
 function SelectBoxBool ($strBoxName, $strSelectedVal = "", $strYes='', $strNo='', $field1="class=\"typeselect\"")
 {
-	if ($strYes == '') $strYes = 'Да';
-	if ($strNo == '') $strNo = 'Нет';
+	if ($strYes == '') $strYes = Lib\Loc::getPackMessage('core','core_yes'); // 'Да';
+	if ($strNo == '') $strNo = Lib\Loc::getPackMessage('core','core_no'); // 'Нет';
 	if ($strSelectedVal == "") $strSelectedVal = 0;
+	if (is_bool($strSelectedVal))
+	{
+		if ($strSelectedVal===true)
+		{
+			$strSelectedVal = 1;
+		}
+		else
+		{
+			$strSelectedVal = 0;
+		}
+	}
 
 	$arValues = array(
 		array(
@@ -166,12 +655,20 @@ function InputCalendar ($strName, $strValue="", $field1="", $strId="")
 			throw new Exception\ArgumentNullException("strName");
 		}
 		if (strlen($strValue)==0 && !is_null($strValue)) $strValue = date("d.m.Y");
-		Lib\Buffer::addJS(Lib\Config::getConfig("CORE_ROOT")."js/calendar.js");
-		$strReturnBox = "<input ".$field1." type=\"text\" id=\"".(($strId!="")?$strId:$strName);
+		//Lib\Buffer::addJS(Lib\Config::getConfig("CORE_ROOT")."js/calendar.js");
+		Lib\Plugins::includeInputCalendar();
+		//Lib\Buffer::addJS(Lib\Config::getConfig("CORE_ROOT")."plugins/jquery.maskedinput/jquery.maskedinput.min.js");
+		Lib\Plugins::includeMaskedInput();
+		$strReturnBox = "<input ".$field1." type=\"date\" id=\"".(($strId!="")?$strId:$strName);
 		$strReturnBox.= "\" name=\"".$strName."\" value=\"".$strValue."\"";
 		$strReturnBox.= " onfocus=\"this.select();lcs(this)\"";
 		$strReturnBox.= " onclick=\"event.cancelBubble=true;this.select();lcs(this)\"";
-		$strReturnBox.= ">";
+		$strReturnBox.= ">\n";
+		$strReturnBox.= "<script>\n";
+		$strReturnBox.= "$(function() {\n";
+		$strReturnBox.= "\$('#".(($strId!="")?$strId:$strName)."').mask('99.99.9999', {placeholder: 'дд.мм.гггг' });\n";
+		$strReturnBox.= "});\n";
+		$strReturnBox.= "</script>\n";
 
 		return $strReturnBox;
 	}

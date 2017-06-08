@@ -63,7 +63,14 @@ class Options
 	public static function getOptionInt($optionName) {
 		$optionName = strtoupper($optionName);
 
-		return intval(self::getOption($optionName));
+		if ($optionVal = self::getOption($optionName))
+		{
+			return intval($optionVal);
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -107,7 +114,10 @@ class Options
 	public static function setOption ($optionName, $optionValue)
 	{
 		$optionName = strtoupper($optionName);
-		if (!isset(self::$arOptions[$optionName]))
+		if (
+			!isset(self::$arOptions[$optionName])
+			|| self::$arOptions[$optionName] != $optionValue
+		)
 		{
 			$arInsert = array(
 				'NAME' => $optionName,

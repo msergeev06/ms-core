@@ -89,9 +89,13 @@ class TimeField extends ScalarField
 	 */
 	public static function saveDataModification ($value, $obj=null)
 	{
-		$value = self::validate($value, $obj);
+		if (!is_null($value))
+		{
+			$value = self::validate($value, $obj);
 
-		$value = parent::saveDataModification($value);
+			$value = parent::saveDataModification($value);
+		}
+
 		return $value;
 	}
 
@@ -107,7 +111,11 @@ class TimeField extends ScalarField
 	 */
 	public static function fetchDataModification ($value, $obj=null)
 	{
-		$value = parent::fetchDataModification ($value, $obj);
+		if (!is_null($value))
+		{
+			$value = parent::fetchDataModification ($value, $obj);
+		}
+
 		return $value;
 	}
 

@@ -255,14 +255,17 @@ class ScalarField extends Field
 	{
 		if (!is_null($obj))
 		{
-			$additionalSaveDataModification = $obj->getSaveDataModification();
-			if (!is_null($additionalSaveDataModification) && is_callable($additionalSaveDataModification))
+			if (!is_null($value))
 			{
-				$value = call_user_func($additionalSaveDataModification,$value);
-			}
-			if ($obj->isSerialized())
-			{
-				$value = $obj->serialize($value);
+				$additionalSaveDataModification = $obj->getSaveDataModification();
+				if (!is_null($additionalSaveDataModification) && is_callable($additionalSaveDataModification))
+				{
+					$value = call_user_func($additionalSaveDataModification,$value);
+				}
+				if ($obj->isSerialized())
+				{
+					$value = $obj->serialize($value);
+				}
 			}
 		}
 
@@ -281,14 +284,17 @@ class ScalarField extends Field
 	{
 		if (!is_null($obj))
 		{
-			$additionalFetchDataModification = $obj->getFetchDataModification();
-			if (!is_null($additionalFetchDataModification) && is_callable($additionalFetchDataModification))
+			if (!is_null($value))
 			{
-				$value = call_user_func($additionalFetchDataModification,$value);
-			}
-			if ($obj->isSerialized())
-			{
-				$value = $obj->unserialize($value);
+				$additionalFetchDataModification = $obj->getFetchDataModification();
+				if (!is_null($additionalFetchDataModification) && is_callable($additionalFetchDataModification))
+				{
+					$value = call_user_func($additionalFetchDataModification,$value);
+				}
+				if ($obj->isSerialized())
+				{
+					$value = $obj->unserialize($value);
+				}
 			}
 		}
 

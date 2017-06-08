@@ -111,8 +111,11 @@ class FloatField extends ScalarField
 	{
 		if (!is_null($obj))
 		{
-			$scale = $obj->getScale();
-			$value = round($value,$scale);
+			if (!is_null($value))
+			{
+				$scale = $obj->getScale();
+				$value = round($value,$scale);
+			}
 		}
 
 		return $value;
@@ -132,8 +135,11 @@ class FloatField extends ScalarField
 	{
 		if (!is_null($obj))
 		{
-			$scale = $obj->getScale();
-			$value = round($value,$scale);
+			if (!is_null($value))
+			{
+				$scale = $obj->getScale();
+				$value = round($value,$scale);
+			}
 		}
 
 		return $value;

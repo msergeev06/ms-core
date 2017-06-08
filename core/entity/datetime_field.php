@@ -90,10 +90,13 @@ class DatetimeField extends DateField
 	public static function saveDataModification ($value, $obj=null)
 	{
 		//msDebug($value);
-		list($date,$time) = explode(' ',$value);
-		$date = DateField::saveDataModification($date, $obj);
-		$time = TimeField::saveDataModification($time, $obj);
-		$value = $date.' '.$time;
+		if (!is_null($value))
+		{
+			list($date,$time) = explode(' ',$value);
+			$date = DateField::saveDataModification($date, $obj);
+			$time = TimeField::saveDataModification($time, $obj);
+			$value = $date.' '.$time;
+		}
 
 		//msDebug($value);
 		return $value;
@@ -109,10 +112,13 @@ class DatetimeField extends DateField
 	 */
 	public static function fetchDataModification ($value, $obj=null)
 	{
-		list($date,$time) = explode(' ',$value);
-		$date = DateField::fetchDataModification($date, $obj);
-		$time = TimeField::fetchDataModification($time, $obj);
-		$value = $date.' '.$time;
+		if (!is_null($value))
+		{
+			list($date,$time) = explode(' ',$value);
+			$date = DateField::fetchDataModification($date, $obj);
+			$time = TimeField::fetchDataModification($time, $obj);
+			$value = $date.' '.$time;
+		}
 
 		return $value;
 	}

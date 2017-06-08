@@ -1,6 +1,6 @@
 <?php
 /**
- * MSergeev\Core\Entity\FloatField
+ * MSergeev\Core\Entity\IntegerField
  * Сущность поля базы данных, содержащего целое число
  *
  * @package MSergeev\Core
@@ -113,8 +113,11 @@ class IntegerField extends ScalarField
 	 */
 	public static function saveDataModification ($value, $obj=null)
 	{
-		$value = parent::saveDataModification($value, $obj);
-		$value = intval($value);
+		if (!is_null($value))
+		{
+			$value = parent::saveDataModification($value, $obj);
+			$value = intval($value);
+		}
 
 		return $value;
 	}
@@ -131,8 +134,11 @@ class IntegerField extends ScalarField
 	 */
 	public static function fetchDataModification ($value, $obj=null)
 	{
-		$value = parent::fetchDataModification($value, $obj);
-		$value = intval($value);
+		if (!is_null($value))
+		{
+			$value = parent::fetchDataModification($value, $obj);
+			$value = intval($value);
+		}
 
 		return $value;
 	}

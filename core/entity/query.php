@@ -124,6 +124,8 @@ class Query
 	 */
 	protected $deleteConfirm = false;
 
+	protected $massDeleteResult = null;
+
 	/**
 	 * @var array Массив связей с полями таблицы
 	 */
@@ -225,16 +227,18 @@ class Query
 	protected $having = array();
 
 	/**
-	 * Временно не используется
+	 * Массив JOINs
+	 *
 	 * @var array
 	 */
 	protected $join_map = array();
 
 	/**
-	 * Временно не используется
+	 * Список зарегистированных JOINs
+	 *
 	 * @var array list of used joins
 	 */
-	protected $join_registry;
+	protected $join_registry = array();
 
 	/**
 	 * Временно не используется
@@ -925,10 +929,15 @@ class Query
 		{
 			$this->setQueryBuildParts($this->BuildQuery());
 		}
+		//msEchoVar($this->getQueryBuildParts());
 		//TODO: Доделать остановку exec с использованием константы
 		if ($debug || (defined("NO_QUERY_EXEC") && NO_QUERY_EXEC===true))
 		{
 			return $this->getQueryBuildParts();
+		}
+		elseif ($this->getQueryBuildParts()===false && $this->getType() == "delete")
+		{
+			return $this->massDeleteResult;
 		}
 		else
 		{
@@ -1011,6 +1020,7 @@ class Query
 			$this->arSqlFrom[$tableName] = 1;
 		}
 //		msDebug($this->arSqlFrom);
+//		msDebug($arSelect);
 		if (!empty($arSelect)) {
 			$bSelectFirst = true;
 			foreach ($arSelect as $key=>$value)
@@ -1081,8 +1091,10 @@ class Query
 								}
 								$linked = $fieldMap->getLink();
 								list($linkedTable,$linkedField) = explode('.',$linked);
+								/*
 								$linkedSql = $helper->wrapQuotes($linkedTable).'.'
 									.$helper->wrapQuotes($linkedField);
+								*/
 								$linkedClass = Lib\Tools::getClassNameByTableName($linkedTable);
 								$linkedMap = $linkedClass::getMapArray();
 							}
@@ -1100,6 +1112,12 @@ class Query
 						}
 
 						$lastFieldTable = $arFieldTable[count($arFieldTable)-3];
+						$this->AddJoin($linkedTable,"LEFT",array(
+							"BASE_TABLE" => $lastFieldTable,
+							"BASE_FIELD" => $lastField,
+							"COMPARE_TABLE" => $linkedTable,
+							"COMPARE_FIELD" => $linkedField
+						));
 						$sqlSelect.= $helper->wrapQuotes($linkedTable)."."
 							.$helper->wrapQuotes($selectField)." AS "
 							.$helper->wrapQuotes($aliasField);
@@ -1107,7 +1125,7 @@ class Query
 						{
 							$this->arFieldsEntity[$aliasField] = $linkedMap[$selectField];
 						}
-						if (!isset($this->arSqlFrom[$linkedTable]))
+/*						if (!isset($this->arSqlFrom[$linkedTable]))
 						{
 							$this->arSqlFrom[$linkedTable] = 1;
 						}
@@ -1115,7 +1133,7 @@ class Query
 						{
 							$this->arSqlWhere[$linkedSql] = $helper->wrapQuotes($lastFieldTable)
 								.'.'.$helper->wrapQuotes($lastField);
-						}
+						}*/
 					}
 				}
 				else
@@ -1184,8 +1202,10 @@ class Query
 								}
 								$linked = $fieldMap->getLink();
 								list($linkedTable,$linkedField) = explode('.',$linked);
+								/*
 								$linkedSql = $helper->wrapQuotes($linkedTable).'.'
 									.$helper->wrapQuotes($linkedField);
+								*/
 								$linkedClass = Lib\Tools::getClassNameByTableName($linkedTable);
 								$linkedMap = $linkedClass::getMapArray();
 							}
@@ -1203,6 +1223,13 @@ class Query
 						}
 
 						$lastFieldTable = $arFieldTable[count($arFieldTable)-3];
+						$this->AddJoin($linkedTable,"LEFT",array(
+							"BASE_TABLE" => $lastFieldTable,
+							"BASE_FIELD" => $lastField,
+							"COMPARE_TABLE" => $linkedTable,
+							"COMPARE_FIELD" => $linkedField
+						));
+
 						$sqlSelect.= $helper->wrapQuotes($linkedTable)."."
 							.$helper->wrapQuotes($selectField)." AS "
 							.$helper->wrapQuotes($aliasField);
@@ -1210,7 +1237,7 @@ class Query
 						{
 							$this->arFieldsEntity[$aliasField] = $linkedMap[$selectField];
 						}
-						if (!isset($this->arSqlFrom[$linkedTable]))
+/*						if (!isset($this->arSqlFrom[$linkedTable]))
 						{
 							$this->arSqlFrom[$linkedTable] = 1;
 						}
@@ -1218,7 +1245,7 @@ class Query
 						{
 							$this->arSqlWhere[$linkedSql] = $helper->wrapQuotes($lastFieldTable)
 								.'.'.$helper->wrapQuotes($lastField);
-						}
+						}*/
 					}
 				}
 			}
@@ -1296,6 +1323,10 @@ class Query
 			foreach ($arWhere as $field=>$value)
 			{
 				$oldField = $field;
+				if (isset($mask))
+				{
+					unset($mask);
+				}
 				if ($arMask = $this->maskField($field))
 				{
 					$field = $arMask['field'];
@@ -1644,7 +1675,7 @@ class Query
 		$arGroup = $this->getGroup();
 		if (!empty($arGroup))
 		{
-			//TODO: Доделать (вспомнить бы только, что доделать)
+			//TODO: Доделать (работу с группировками)
 			$sqlGroup .= "GROUP BY\n\t";
 			$bFirst = true;
 			foreach ($arGroup as $groupField=>$sort)
@@ -1652,11 +1683,11 @@ class Query
 				if($bFirst)
 				{
 					$bFirst = false;
-					$sqlGroup .= $helper->wrapQuotes($groupField).' '.$sort;
+					$sqlGroup .= $helper->wrapQuotes($sort);//.' '.$sort;
 				}
 				else
 				{
-					$sqlGroup .= ",\n\t".$helper->wrapQuotes($groupField).' '.$sort;
+					$sqlGroup .= ",\n\t".$helper->wrapQuotes($sort);//.' '.$sort;
 				}
 			}
 			$sqlGroup.="\n";
@@ -1728,6 +1759,91 @@ class Query
 	}
 
 	/**
+	 * Создает sql запрос из массива JOIN
+	 *
+	 * @return string $sql
+	 */
+	private function CreateSqlJoin()
+	{
+		$helper = new Lib\SqlHelper();
+		$arJoin = $this->join_map;
+		$sql = '';
+		if (!empty($arJoin))
+		{
+			foreach ($arJoin as $join)
+			{
+				$sql .= "\n\t".$join['TYPE']." JOIN\n\t\t"
+					.$helper->wrapQuotes($join['TABLE'])."\n\t";
+				if (isset($join['ON']))
+				{
+					$sql .= "ON\n";
+					if (isset($join['ON']['LOGIC']))
+					{
+						$logic = $join['ON']['LOGIC'];
+						unset($join['ON']['LOGIC']);
+					}
+					else
+					{
+						$logic = "AND";
+					}
+					$count = count($join['ON']);
+					foreach ($join['ON'] as $i=>$join_on)
+					{
+						$sql .= "\t\t".$helper->wrapQuotes($join_on['BASE_TABLE'])."."
+							.$helper->wrapQuotes($join_on['BASE_FIELD'])." = "
+							.$helper->wrapQuotes($join_on['COMPARE_TABLE'])."."
+							.$helper->wrapQuotes($join_on['COMPARE_FIELD']);
+						if ($i<($count-2))
+						{
+							$sql .= " ".$logic;
+						}
+						$sql .= "\n";
+					}
+				}
+			}
+		}
+
+		return $sql;
+	}
+
+	/**
+	 * Добавляет JOIN заданного типа к SQL запросу, если не был добавлен ранее
+	 *
+	 * @param string    $table  Таблица JOIN
+	 * @param string    $type   Тип JOIN (INNER, LEFT, RIGHT и т.д.)
+	 * @param array     $on     Значения параметра ON
+	 */
+	private function AddJoin ($table,$type='',$on=array()/*,$using=''*/)
+	{
+		if (!isset($this->join_registry[$table]))
+		{
+			$arJoin = array(
+				'TYPE' => $type,
+				'TABLE' => $table
+			);
+			if (!empty($on))
+			{
+				if (isset($on['BASE_TABLE']) || isset($on['BASE_FIELD']) ||
+					isset($on['COMPARE_TABLE']) || isset($on['COMPARE_FIELD']))
+				{
+					$arJoin['ON'] = array($on);
+				}
+				else
+				{
+					$arJoin['ON'] = $on;
+				}
+			}
+			/*
+			if ($using != '')
+			{
+				$arJoin['USING'] = $using;
+			}*/
+			$this->join_map[] = $arJoin;
+			$this->join_registry[$table] = true;
+		}
+	}
+
+	/**
 	 * Создает SQL запрос типа "select"
 	 *
 	 * @return string
@@ -1739,6 +1855,8 @@ class Query
 		$sql.= $this->CreateSqlSelect();
 
 		$sql.= $this->CreateSqlFrom();
+
+		$sql.= $this->CreateSqlJoin();
 
 		$sql.= $this->CreateSqlWhere();
 
@@ -1886,7 +2004,7 @@ class Query
 		//msDebug($arDefaultValues);
 		$sql = "";
 
-		$bFFirts = true;
+		$bFFirst = true;
 
 		$sql .= "INSERT INTO ".$helper->wrapQuotes($tableName)." ";
 		foreach ($arDefaultValues as $arValue)
@@ -2015,9 +2133,9 @@ class Query
 			}
 			$sqlNames .= ")";
 			$sqlValues .= ")";
-			if ($bFFirts)
+			if ($bFFirst)
 			{
-				$bFFirts = false;
+				$bFFirst = false;
 				$sql .= $sqlNames."\nVALUES\n ".$sqlValues;
 			}
 			else
@@ -2084,14 +2202,19 @@ class Query
 					{
 						$sql .= ",\n";
 					}
-					$sql .= "\t".$helper->wrapQuotes($columnName)." = '";
+					$sql .= "\t".$helper->wrapQuotes($columnName)." = ";
 
 					$fieldClassName = $arMap[$field]->getClassName();
 					//$value = $arMap[$field]->saveDataModification($value);
 					$value = $fieldClassName::saveDataModification($value,$arMap[$field]);
-					$sql .= $value;
-
-					$sql .= "'";
+					if (is_null($value))
+					{
+						$sql .= 'NULL';
+					}
+					else
+					{
+						$sql .= "'".$value."'";
+					}
 				}
 				else
 				{
@@ -2190,6 +2313,7 @@ class Query
 		$primaryId = $this->getDeletePrimary();
 		$arTableLinks = $this->getTableLinks();
 		$tableName = $this->getTableName();
+		$massSql = '';
 
 		foreach ($arTableLinks as $field=>$arLinked)
 		{
@@ -2219,7 +2343,8 @@ class Query
 									Lib\Tools::runTableClassFunction ($linkTable,'getTableMap'),
 									Lib\Tools::runTableClassFunction ($linkTable,'getTableLinks')
 								);
-								$deleteQuery->exec();
+								$deleteQuery->BuildQuery();
+								$massSql .= $deleteQuery->getQueryBuildParts().";\n";
 							}
 						}
 					}
@@ -2246,7 +2371,8 @@ class Query
 								Lib\Tools::runTableClassFunction ($linkTable,'getTableMap'),
 								Lib\Tools::runTableClassFunction ($linkTable,'getTableLinks')
 							);
-							$deleteQuery->exec();
+							$deleteQuery->BuildQuery();
+							$massSql .= $deleteQuery->getQueryBuildParts().";\n";
 						}
 					}
 				}
@@ -2276,9 +2402,13 @@ class Query
 		}
 		$sql .= " LIMIT 1";
 
+		$massSql .= $sql.";";
+		//msEchoVar($massSql);
 		$delQuery = new Query('delete');
-		$delQuery->setQueryBuildParts($sql);
+		$delQuery->setQueryBuildParts($massSql);
 		$res = $delQuery->exec();
+
+		$this->massDeleteResult = $res;
 	}
 
 	//TODO: Протестировать

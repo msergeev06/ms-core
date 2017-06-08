@@ -352,6 +352,7 @@ class DataManager {
 			$arResult[] = $ar_res;
 		}
 
+		//msDebug($arMap);
 		if (!empty($arResult))
 		{
 			$tmpResult = $arResult;
@@ -362,7 +363,19 @@ class DataManager {
 				{
 					if(!is_numeric($field))
 					{
-						$arResult[$i][$field] = $value;
+						$arFieldsEntity = $query->getFieldsEntity();
+						if (!empty($arFieldsEntity) && !is_null($arFieldsEntity[$field]))
+						{
+							$arResult[$i][$field] = $arFieldsEntity[$field]::fetchDataModification($value, $arFieldsEntity[$field]);
+						}
+						elseif (!is_null($arMap[$field]))
+						{
+							$arResult[$i][$field] = $arMap[$field]::fetchDataModification($value, $arMap[$field]);
+						}
+						else
+						{
+							$arResult[$i][$field] = $value;
+						}
 					}
 				}
 			}

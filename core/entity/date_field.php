@@ -89,12 +89,15 @@ class DateField extends ScalarField
 	 */
 	public static function saveDataModification ($value, $obj=null)
 	{
-		$value = self::validate($value, $obj);
-		list($arDate['day'],$arDate['month'],$arDate['year']) = explode(".",$value);
-		$time = mktime(0,0,0,intval($arDate['month']),intval($arDate['day']),intval($arDate['year']));
-		$value = date('Y-m-d',$time);
+		if (!is_null($value))
+		{
+			$value = self::validate($value, $obj);
+			list($arDate['day'],$arDate['month'],$arDate['year']) = explode(".",$value);
+			$time = mktime(0,0,0,intval($arDate['month']),intval($arDate['day']),intval($arDate['year']));
+			$value = date('Y-m-d',$time);
 
-		$value = parent::saveDataModification($value, $obj);
+			$value = parent::saveDataModification($value, $obj);
+		}
 		return $value;
 	}
 
@@ -110,11 +113,14 @@ class DateField extends ScalarField
 	 */
 	public static function fetchDataModification ($value, $obj=null)
 	{
-		list($arDate['year'],$arDate['month'],$arDate['day']) = explode("-",$value);
-		$time = mktime(0,0,0,intval($arDate['month']),intval($arDate['day']),intval($arDate['year']));
-		$value = date('d.m.Y',$time);
+		if (!is_null($value) && strpos($value,'.') === false)
+		{
+			list($arDate['year'],$arDate['month'],$arDate['day']) = explode("-",$value);
+			$time = mktime(0,0,0,intval($arDate['month']),intval($arDate['day']),intval($arDate['year']));
+			$value = date('d.m.Y',$time);
 
-		$value = parent::fetchDataModification ($value, $obj);
+			$value = parent::fetchDataModification ($value, $obj);
+		}
 		return $value;
 	}
 

@@ -45,6 +45,12 @@ class Buffer {
 	 */
 	protected static $arWebixJs=array();
 
+	protected static $additionalJsDownPage='';
+
+	protected static $refreshUrl = null;
+
+	protected static $refreshTime = null;
+
 	/**
 	 * Инициализирует вывод в буфер
 	 *
@@ -71,6 +77,14 @@ class Buffer {
 	 *
 	 */
 	public static function end() {
+		//echo self::$additionalJsDownPage; за пределами html
+		if (defined("SHOW_SQL_WORK_TIME") && SHOW_SQL_WORK_TIME === true)
+		{
+			$DB = $GLOBALS['DB'];
+			echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
+			echo '<p>'.$DB->getCountQuery().' запросов за '.$DB->getAllQueryTime().' сек.</p>';
+			echo "</div><br>";
+		}
 		ob_end_flush();
 	}
 
@@ -88,6 +102,15 @@ class Buffer {
 		$buffer = str_replace("#INCLUDED_CSS#", static::$includedCSS, $buffer);
 		$buffer = str_replace("#INCLUDED_JS#", static::$includedJS, $buffer);
 		$buffer = str_replace("#INCLUDED_WEBIX_JS#", static::generateWebixJs(), $buffer);
+		$buffer = str_replace("#INCLUDED_DOWN_JS#", '<script>$(document).on("ready",function(){'.self::$additionalJsDownPage.'});</script>', $buffer);
+		if (!is_null(self::$refreshUrl) && !is_null(self::$refreshTime))
+		{
+			$buffer = str_replace("#META_REFRESH#", '<META HTTP-EQUIV=REFRESH CONTENT="'.self::$refreshTime.'; URL='.self::$refreshUrl.'">', $buffer);
+		}
+		else
+		{
+			$buffer = str_replace("#META_REFRESH#", '', $buffer);
+		}
 
 		return $buffer;
 	}
@@ -174,6 +197,17 @@ class Buffer {
 		return '#INCLUDED_CSS#';
 	}
 
+	public static function showRefresh ()
+	{
+		return '#META_REFRESH#';
+	}
+
+	public static function setRefresh ($url='', $time=0)
+	{
+		self::$refreshUrl = '//'.$_SERVER['HTTP_HOST'].Tools::getSitePath($url);
+		self::$refreshTime = intval($time);
+	}
+
 	/**
 	 * Добавляет указанный путь к загружаемым файлам JS на странице. Самостоятельно генерирует код,
 	 * добавлемый в head страницы
@@ -190,10 +224,23 @@ class Buffer {
 				static::$arIncludedJS[] = $path;
 				if (static::$includedJS != "")
 				{
-					static::$includedJS .= "\t\t";
+					static::$includedJS .= "\n\t";
 				}
 				static::$includedJS .= '<script type="text/javascript" src="'.$path.'"></script>'."\n";
 			}
+		}
+	}
+
+	public static function addExternalJs($path)
+	{
+		if (!in_array($path,static::$arIncludedJS))
+		{
+			static::$arIncludedJS[] = $path;
+			if (static::$includedJS != "")
+			{
+				static::$includedJS .= "\n\t";
+			}
+			static::$includedJS .= '<script type="text/javascript" src="'.$path.'"></script>'."\n";
 		}
 	}
 
@@ -269,6 +316,14 @@ class Buffer {
 		{
 			static::$arWebixJs[] = $js;
 			return true;
+		}
+	}
+
+	public static function addJsToDownPage ($code=null)
+	{
+		if (!is_null($code))
+		{
+			self::$additionalJsDownPage .= $code;
 		}
 	}
 

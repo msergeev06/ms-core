@@ -42,6 +42,26 @@ class WebixHelper
 				'tooltip' => "Удалить запись",
 				'header' => "",
 				'adjust'=>'=true'
+			),
+			'STRING' => array(
+				'id'=>'string',
+				'header'=> 'STRING',
+				'sort'=>'string',
+				'tooltip'=>'=false',
+				'adjust'=>'=true'
+			),
+			'BOOL' => array(
+				'id' => "bool",
+				'tooltip' => '=false',
+				'header' => 'BOOL',
+				'adjust'=>'=true'
+			),
+			'INT' => array(
+				'id'=>'int',
+				'header'=> 'INT',
+				'sort'=>'int',
+				'tooltip'=>'=false',
+				'adjust'=>'true'
 			)
 		);
 	}

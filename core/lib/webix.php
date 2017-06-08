@@ -105,67 +105,64 @@ class Webix
 		}
 
 		static::init();
-		$func = '
-		winYandexMap = webix.ui({
-				view:"popup",
-				height:450,
-			    width:600,
-			    position:"center",
-			    head:false,
-				body:{
-					template: ""
-				}
-			});
-			';
+		$func = 'winYandexMap = webix.ui({'."\n"
+			."\t".'view:"popup",'."\n"
+			."\t".'height:450,'."\n"
+			."\t".'width:600,'."\n"
+			."\t".'position:"center",'."\n"
+			."\t".'body:{'."\n"
+			."\t\t".'template: ""'."\n"
+			."\t".'}'."\n"
+			.'});'."\n";
 		Buffer::addWebixJs($func,"winYandexMap");
 
-		$webixJS = trim($arData['grid'])." = webix.ui({\n";
-		$webixJS.= 'container:"'.trim($arData['container']).'",'."\n"
-			.'view:"datatable",'."\n";
+		$webixJS = trim($arData['grid'])." = webix.ui({\n\t";
+		$webixJS.= 'container:"'.trim($arData['container']).'",'."\n\t"
+			.'view:"datatable",'."\n\t";
 		if (isset($arData['id']))
 		{
-			$webixJS.="id:'".trim($arData['id']).",\n";
+			$webixJS.="id:'".trim($arData['id']).",\n\t";
 		}
 		if (!isset($arData['autoheight']) || $arData['autoheight'])
 		{
-			$webixJS.="autoheight:true,\n";
+			$webixJS.="autoheight:true,\n\t";
 		}
 		if (!isset($arData['autowidth']) || $arData['autowidth'])
 		{
-			$webixJS.="autowidth:true,\n";
+			$webixJS.="autowidth:true,\n\t";
 		}
 		if ($arData['editable'])
 		{
-			$webixJS.="editable:true,\n"
-				.'editaction:"dblclick",'."\n";
+			$webixJS.="editable:true,\n\t"
+				.'editaction:"dblclick",'."\n\t";
 		}
 		if (isset($arData['leftSplit']) && intval($arData['leftSplit'])>0)
 		{
-			$webixJS.='leftSplit:'.$arData['leftSplit'].",\n";
+			$webixJS.='leftSplit:'.$arData['leftSplit'].",\n\t";
 		}
 		if (isset($arData['rightSplit']) && intval($arData['rightSplit'])>0)
 		{
-			$webixJS.='rightSplit:'.$arData['rightSplit'].",\n";
+			$webixJS.='rightSplit:'.$arData['rightSplit'].",\n\t";
 		}
 		if (isset($arData['minHeight']) && intval($arData['minHeight'])>0)
 		{
-			$webixJS.='minHeight:'.$arData['minHeight'].",\n";
+			$webixJS.='minHeight:'.$arData['minHeight'].",\n\t";
 		}
 		else
 		{
-			$webixJS.='minHeight:50,'."\n";
+			$webixJS.='minHeight:50,'."\n\t";
 		}
 		if (isset($arData['footer']) && $arData['footer'])
 		{
-			$webixJS.="footer:true,\n";
+			$webixJS.="footer:true,\n\t";
 		}
 		if (isset($arData['tooltip']) && $arData['tooltip'])
 		{
-			$webixJS.="tooltip:true,\n";
+			$webixJS.="tooltip:true,\n\t";
 		}
 		if (isset($arData['pager']))
 		{
-			$webixJS.="pager:\n".'{template:"';
+			$webixJS.="pager:{\n\t\t".'template:"';
 			//Первая страница
 			if (!isset($arData['pager']['first']) || $arData['pager']['first'])
 				$webixJS.='{common.first()} ';
@@ -195,15 +192,15 @@ class Webix
 				$arData['pager']['group'] = 5;
 			}
 
-			$webixJS.='",'."\n"
+			$webixJS.='",'."\n\t\t"
 				.'container:"'.$arData['pager']['container']
-				.'",size:'.$arData['pager']['size']
-				.',group:'.$arData['pager']['group']
-				.'},'."\n";
+				.'",'."\n\t\t".'size:'.$arData['pager']['size']
+				.','."\n\t\t".'group:'.$arData['pager']['group']
+				."\n\t},\n\t";
 		}
 		if (isset($arData['width']) && $arData['width']>0)
 		{
-			$webixJS.='width:'.$arData['width'].','."\n";
+			$webixJS.='width:'.$arData['width'].','."\n\t";
 		}
 			//."activeContent:{\n"
 			//."deleteButton:{\n"
@@ -212,9 +209,9 @@ class Webix
 			//."editButton:{\n"
 			//.'id:"editButtonId",'."\n".'view:"button",'."\n"
 			//.'label:"Edit",'."\n".'width:50,click:editClick}},'."\n"
-		$webixJS.="on:{\nonAfterLoad:function(){\nif (!this.count())\n"
-			.'this.showOverlay("Нет данных для отображения...");'."\n"
-			."}\n},\n";
+		$webixJS.="on:{\n\t\tonAfterLoad:function(){\n\t\t\tif (!this.count())\n\t\t\t\t"
+			.'this.showOverlay("'.Loc::getPackMessage('core','webix_no_data_to_view').'");'."\n\t\t"
+			."}\n\t},\n\t";
 /*		$webixJS.="on:{\n"
 			.'"onItemClick":function(id, e, trg){'."\n"
 			//id.column - column id
@@ -232,7 +229,7 @@ class Webix
 		$webixJS.='console.log(winYandexMap.body);';
 		$webixJS.='winYandexMap.show();'
 			."}}},\n";*/
-		$webixJS.="columns:[";
+		$webixJS.="columns:[\n";
 		$bFirst = true;
 		foreach ($arData['columns'] as $arColumns)
 		{
@@ -244,7 +241,7 @@ class Webix
 			{
 				$webixJS.=",\n";
 			}
-			$webixJS.="{";
+			$webixJS.="\t\t{\n\t\t\t";
 
 			$bFFirst = true;
 			foreach ($arColumns as $key=>$value)
@@ -255,7 +252,7 @@ class Webix
 				}
 				else
 				{
-					$webixJS.=",\t";
+					$webixJS.=",\n\t\t\t";
 				}
 				$first = substr($value,0,1);
 				if ($first=='=')
@@ -270,9 +267,9 @@ class Webix
 				}
 			}
 
-			$webixJS.="}";
+			$webixJS.="\n\t\t}";
 		}
-		$webixJS.= "],\n"."data:[\n";
+		$webixJS.= "\n\t],\n\t"."data:[\n";
 		$bFirst = true;
 		foreach ($arData['data'] as $arDat)
 		{
@@ -284,7 +281,7 @@ class Webix
 			{
 				$webixJS.= ",\n";
 			}
-			$webixJS.= "{";
+			$webixJS.= "\t\t{\n\t\t\t";
 
 			$bFFirst = true;
 			foreach ($arDat as $key=>$value)
@@ -295,7 +292,7 @@ class Webix
 				}
 				else
 				{
-					$webixJS.= ",\t";
+					$webixJS.= ",\n\t\t\t";
 				}
 				$first = substr($value,0,1);
 				if ($first=='=')
@@ -310,11 +307,11 @@ class Webix
 				}
 			}
 
-			$webixJS.= "}";
+			$webixJS.= "\n\t\t}";
 		}
-		$webixJS.= "]\n";
+		$webixJS.= "\n\t]\n";
 
-		$webixJS.= '});';
+		$webixJS.= "});\n";
 
 		Buffer::addWebixJs($webixJS, $arData['grid']);
 		Buffer::addCSS(static::$otherCssCatalog.'samples.css');

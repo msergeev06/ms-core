@@ -86,7 +86,7 @@ class ReferenceField extends Field
 	}
 
 	/**
-	 * @return \Bitrix\Main\Entity\Base
+	 * @return \MSergeev\Core\Entity\Base
 	 */
 	/*
 	public function getRefEntity()

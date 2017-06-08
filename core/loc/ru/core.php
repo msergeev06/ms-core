@@ -8,4 +8,9 @@
  * @copyright 2016 Mikhail Sergeev
  */
 
-return array();
+return array(
+	'yes'   => 'Да',
+	'no'    => 'Нет',
+	'file_enlarge' => 'Увеличить',
+	'develop' => 'В разработке'
+);

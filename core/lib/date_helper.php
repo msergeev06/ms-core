@@ -49,6 +49,11 @@ class DateHelper
 			die($e->showException());
 		}
 
+		if (strpos($date,'-') === false)
+		{
+			return self::validateDate($date);
+		}
+
 		list($year,$month,$day) = explode("-",$date);
 		$time = mktime(0,0,0,intval($month),intval($day),intval($year));
 
@@ -79,6 +84,11 @@ class DateHelper
 			die($e->showException());
 		}
 
+		if (strpos($date,'.') === false)
+		{
+			return self::validateDate($date);
+		}
+
 		list($day,$month,$year) = explode(".",$date);
 		$time = mktime(0,0,0,intval($month),intval($day),intval($year));
 
@@ -97,13 +107,14 @@ class DateHelper
 	 *
 	 * @api
 	 *
-	 * @param null   $time Дата в формате сайта, базы или timestamp
-	 * @param string $str  Сдвиг даты в формате strtotime
-	 * @param string $type Тип даты ('site', 'db', 'time')
+	 * @param null          $time Дата в формате сайта, базы или timestamp
+	 * @param string        $str  Сдвиг даты в формате strtotime
+	 * @param string        $type Тип даты ('site', 'db', 'time')
+	 * @param null|string   $outputType Тип даты на выходе, если null то такой же как на входе
 	 *
-	 * @return bool|int|string Дата в указанном в параметре type формате, либо false
+	 * @return bool|int|string Дата в указанном в параметре type (или в outputType) формате, либо false
 	 */
-	public function strToTime ($time=null, $str='+1 day', $type='site')
+	public function strToTime ($time=null, $str='+1 day', $type='site', $outputType=null)
 	{
 		if (is_null($time))
 		{
@@ -126,24 +137,50 @@ class DateHelper
 			list($day,$month,$year)=explode('.',$time);
 			$time = mktime(0,0,0,intval($month),intval($day),intval($year));
 			$time = strtotime($str,$time);
-			return date('d.m.Y',$time);
+			if (is_null($outputType))
+			{
+				return date('d.m.Y',$time);
+			}
 		}
 		elseif ($type === 'db')
 		{
 			list($year,$month,$day)=explode('-',$time);
 			$time = mktime(0,0,0,intval($month),intval($day),intval($year));
 			$time = strtotime($str,$time);
-			return date('Y-m-d',$time);
+			if (is_null($outputType))
+			{
+				return date('Y-m-d',$time);
+			}
 		}
 		elseif ($type === 'time')
 		{
-			return strtotime($str,$time);
+			$time = strtotime($str,$time);
+			if (is_null($outputType))
+			{
+				return $time;
+			}
 		}
 		else
 		{
 			return false;
 		}
 
+		if ($outputType == 'site')
+		{
+			return date('d.m.Y',$time);
+		}
+		elseif ($outputType == 'db')
+		{
+			return date('Y-m-d',$time);
+		}
+		elseif ($outputType == 'time')
+		{
+			return $time;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	/**
@@ -345,6 +382,118 @@ class DateHelper
 				return 'Ноябрь';
 			case 12:
 				return 'Декабрь';
+			default:
+				return FALSE;
+		}
+	}
+
+	/**
+	 * Возвращает наименование месяца в винительном падеже
+	 * ('января', 'февраля', 'марта' и т.д.)
+	 *
+	 * @api
+	 *
+	 * @param int $month Месяц в формате date('n')
+	 *
+	 * @return bool|string Наименование месяца, либо false
+	 */
+	public static function getNameMonthAccusative ($month=null)
+	{
+		try
+		{
+			if (is_null($month))
+			{
+				throw new Exception\ArgumentNullException('month');
+			}
+		}
+		catch (Exception\ArgumentNullException $e)
+		{
+			$e->showException();
+			return false;
+		}
+
+		switch ($month)
+		{
+			case 1:
+				return 'января';
+			case 2:
+				return 'февраля';
+			case 3:
+				return 'марта';
+			case 4:
+				return 'апреля';
+			case 5:
+				return 'мая';
+			case 6:
+				return 'июня';
+			case 7:
+				return 'июля';
+			case 8:
+				return 'августа';
+			case 9:
+				return 'сентября';
+			case 10:
+				return 'октября';
+			case 11:
+				return 'ноября';
+			case 12:
+				return 'декабря';
+			default:
+				return FALSE;
+		}
+	}
+
+	/**
+	 * Возвращает краткое наименование месяца
+	 * ('янв', 'фев', 'мар' и т.д.)
+	 *
+	 * @api
+	 *
+	 * @param int $month Месяц в формате date('n')
+	 *
+	 * @return bool|string Наименование месяца, либо false
+	 */
+	public static function getNameMonthShort ($month=null)
+	{
+		try
+		{
+			if (is_null($month))
+			{
+				throw new Exception\ArgumentNullException('month');
+			}
+		}
+		catch (Exception\ArgumentNullException $e)
+		{
+			$e->showException();
+			return false;
+		}
+
+		switch ($month)
+		{
+			case 1:
+				return 'янв';
+			case 2:
+				return 'фев';
+			case 3:
+				return 'мар';
+			case 4:
+				return 'апр';
+			case 5:
+				return 'мая';
+			case 6:
+				return 'июн';
+			case 7:
+				return 'июл';
+			case 8:
+				return 'авг';
+			case 9:
+				return 'сен';
+			case 10:
+				return 'окт';
+			case 11:
+				return 'ноя';
+			case 12:
+				return 'дек';
 			default:
 				return FALSE;
 		}

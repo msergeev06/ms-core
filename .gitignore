@@ -3,6 +3,8 @@
 /packages/*
 !/packages/packages.php
 /msergeev_config.php
+/core/plugins
+/init.php
 
 # Windows image file caches
 Thumbs.db

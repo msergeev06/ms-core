@@ -43,7 +43,7 @@ class Users
 	 */
 	public function __construct ()
 	{
-		self::setID(1);
+		self::setID(2);
 	}
 
 	/**

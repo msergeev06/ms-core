@@ -189,8 +189,8 @@ class Loader {
 			if (file_exists(self::$packagesRoot.$namePackage."/default_options.php"))
 			{
 				//Сохраняем их
-				$arPackageDefaultOptions = array();
-				__include_once(self::$packagesRoot.$namePackage."/default_options.php");
+				//$arPackageDefaultOptions = array();
+				$arPackageDefaultOptions = __include_once(self::$packagesRoot.$namePackage."/default_options.php");
 				if (isset($arPackageDefaultOptions) && !empty($arPackageDefaultOptions))
 				{
 					foreach ($arPackageDefaultOptions as $optionName=>$optionValue)
@@ -350,6 +350,21 @@ class Loader {
 		}
 	}
 
+	public static function setTemplate ($namePackage=null, $templateName=null)
+	{
+		if (!is_null($namePackage) && isset(static::$arPackage[$namePackage]) && !is_null($templateName))
+		{
+			//Путь к действующему шаблону пакета
+			static::$arPackage[$namePackage]["TEMPLATE"] = static::$packagesRoot.$namePackage."/templates/".$templateName."/";
+			//Относительный путь к действующему шаблону пакета
+			static::$arPackage[$namePackage]["SITE_TEMPLATE"] = str_replace(Config::getConfig("SITE_ROOT"),"",static::$arPackage[$namePackage]["TEMPLATE"]);
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	/**
 	 * Возвращает путь от корня сайта к текущему шаблону пакета
 	 *
@@ -431,7 +446,7 @@ class Loader {
 		{
 			foreach ($firstLoad as $files)
 			{
-				__include_once($dir.$files);
+				\__include_once($dir.$files);
 				$noLoad[] = $files;
 			}
 		}
@@ -443,7 +458,8 @@ class Loader {
 				{
 					if (!in_array($file,$noLoad))
 					{
-						__include_once($dir . $file);
+						$file = str_replace($dir,'',$file);
+						\__include_once($dir . $file);
 					}
 				}
 				closedir($dh);

@@ -105,6 +105,39 @@ class DBResult
 	}
 
 	/**
+	 * Возвращает время исполнения SQL запроса
+	 *
+	 * @return float
+	 */
+	public function getQueryTime ()
+	{
+		$DB = $GLOBALS['DB'];
+		return floatval($DB->getLastQueryTime());
+	}
+
+	/**
+	 * Возвращает время исполнения всех SQL запросов
+	 *
+	 * @return float
+	 */
+	public function getAllQueryTime ()
+	{
+		$DB = $GLOBALS['DB'];
+		return floatval($DB->getAllQueryTime());
+	}
+
+	/**
+	 * Возвращает количество SQL запросов
+	 *
+	 * @return int
+	 */
+	public function getQueryCount ()
+	{
+		$DB = $GLOBALS['DB'];
+		return intval($DB->getCountQuery());
+	}
+
+	/**
 	 * Возвращает текст SQL запроса
 	 *
 	 * @api

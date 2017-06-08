@@ -151,4 +151,20 @@ class StringField extends ScalarField
 		return __CLASS__;
 	}
 
+	/**
+	 * Обрабатывает значение поля перед сохранением в базе данных
+	 *
+	 * @param $value
+	 * @param object|null $obj
+	 *
+	 * @return mixed|string
+	 */
+	public static function saveDataModification ($value, $obj=null)
+	{
+		$value = mysql_real_escape_string($value);
+		$value = str_replace("%", "\%", $value);
+
+		return $value;
+	}
+
 }

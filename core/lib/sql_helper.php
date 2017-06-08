@@ -250,4 +250,24 @@ class SqlHelper
 		return 'SUM('.$column.') '.$this->wrapQuotes($newColumn);
 	}
 
+	/**
+	 * Возвращает строковое представление SQL функции AVG
+	 *
+	 * @param string $column    Имя поля
+	 * @param null   $newColumn Алиас значения
+	 *
+	 * @return string
+	 */
+	public function getAvgFunction ($column="", $newColumn=null)
+	{
+		if ($column=="") return "";
+
+		if (is_null($newColumn))
+		{
+			$newColumn = 'AVG_'.$column;
+		}
+		$column = $this->wrapFieldQuotes($column);
+
+		return 'AVG('.$column.') '.$this->wrapQuotes($newColumn);
+	}
 }

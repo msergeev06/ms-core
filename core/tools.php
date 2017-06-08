@@ -16,7 +16,8 @@ function __include_once ($path,$echo=false)
 	{
 		echo $path."<br>";
 	}
-	include_once($path);
+
+	return include_once($path);
 }
 
 function maskValue ($value=null)

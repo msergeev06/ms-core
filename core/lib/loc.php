@@ -52,10 +52,22 @@ class Loc
 				while (($file = readdir($dh)) !== false) {
 					if ($file != '.' && $file != '..')
 					{
-						$arMessages = include ($dir . $file);
-						foreach ($arMessages as $field=>$text)
+						$arMessages = array();
+						if (file_exists($dir . $file))
 						{
-							static::$arMessage[strtoupper($prefix).strtoupper($field)] = $text;
+							$arMessages = include ($dir . $file);
+						}
+						if (!empty($arMessages))
+						{
+							$filename = str_replace('.php','',$file);
+							foreach ($arMessages as $field=>$text)
+							{
+								if (strpos($field,$filename)!==false)
+								{
+									$field = str_replace($filename.'_','',$field);
+								}
+								static::$arMessage[strtoupper($prefix).strtoupper($filename).'_'.strtoupper($field)] = $text;
+							}
 						}
 					}
 				}

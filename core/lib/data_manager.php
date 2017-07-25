@@ -18,15 +18,15 @@ use MSergeev\Core\Exception;
 class DataManager {
 
 	/** Константы для обработки событий. Временно не используются */
-	const EVENT_ON_BEFORE_ADD = "OnBeforeAdd";
-	const EVENT_ON_ADD = "OnAdd";
-	const EVENT_ON_AFTER_ADD = "OnAfterAdd";
-	const EVENT_ON_BEFORE_UPDATE = "OnBeforeUpdate";
-	const EVENT_ON_UPDATE = "OnUpdate";
-	const EVENT_ON_AFTER_UPDATE = "OnAfterUpdate";
-	const EVENT_ON_BEFORE_DELETE = "OnBeforeDelete";
-	const EVENT_ON_DELETE = "OnDelete";
-	const EVENT_ON_AFTER_DELETE = "OnAfterDelete";
+	const EVENT_ON_BEFORE_ADD       = "OnBeforeAdd";
+	const EVENT_ON_ADD              = "OnAdd";
+	const EVENT_ON_AFTER_ADD        = "OnAfterAdd";
+	const EVENT_ON_BEFORE_UPDATE    = "OnBeforeUpdate";
+	const EVENT_ON_UPDATE           = "OnUpdate";
+	const EVENT_ON_AFTER_UPDATE     = "OnAfterUpdate";
+	const EVENT_ON_BEFORE_DELETE    = "OnBeforeDelete";
+	const EVENT_ON_DELETE           = "OnDelete";
+	const EVENT_ON_AFTER_DELETE     = "OnAfterDelete";
 
 	/**
 	 * Возвращает имя текущего класса
@@ -127,6 +127,26 @@ class DataManager {
 	}
 
 	/**
+	 * Возвращает дополнительный SQL запрос, используемый после создания таблицы
+	 *
+	 * @return null|string
+	 */
+	public static function getAdditionalCreateSql ()
+	{
+		return null;
+	}
+
+	/**
+	 * Возвращает дополнительный SQL запрос, используемый после удаления таблицы
+	 *
+	 * @return null|string
+	 */
+	public static function getAdditionalDeleteSql ()
+	{
+		return null;
+	}
+
+	/**
 	 * Добавляет значения в таблицу
 	 *
 	 * @ignore
@@ -199,26 +219,40 @@ class DataManager {
 	}
 
 	/**
-	 * @deprecated
-	 * @ignore
+	 * Возвращает запись по ID
 	 *
 	 * @param       $primary
-	 * @param array $parameters
+	 * @param array $arSelect
+	 * @param bool  $showSql
+	 *
+	 * @return array
 	 */
-	public static function getByPrimary ($primary, array $parameters = array())
+	public static function getByPrimary ($primary, array $arSelect = array(),$showSql=false)
 	{
-		static::normalizePrimary($primary);
+		//static::normalizePrimary($primary);
+		$arList['filter'] = array('ID'=>$primary);
+		$arList['limit'] = 1;
+		if (!empty($arSelect))
+		{
+			$arList['select'] = $arSelect;
+		}
+		$arRes = static::getOne($arList,$showSql);
+
+		return $arRes;
 	}
 
 	/**
-	 * @deprecated
-	 * @ignore
+	 * Возвращает запись по ID
 	 *
 	 * @param $id
+	 * @param array $arSelect
+	 * @param bool  $showSql
+	 *
+	 * @return array
 	 */
-	public static function getById($id)
+	public static function getById($id, array $arSelect = array(), $showSql=false)
 	{
-		return static::getByPrimary($id);
+		return static::getByPrimary($id, $arSelect, $showSql);
 	}
 
 	/**
@@ -287,6 +321,11 @@ class DataManager {
 		return static::getList($params[0]);
 	}
 
+	public static function getTableMap ()
+	{
+		return static::getMap();
+	}
+
 	/**
 	 * Осуществляет выборку из таблицы значений по указанным параметрам
 	 *
@@ -297,7 +336,7 @@ class DataManager {
 	 *
 	 * @return array|bool Массив значений таблицы, массив с SQL запросом, либо в случае неудачи false
 	 */
-	public static function getList ($arParams,$showSql=false)
+	public static function getList ($arParams=array(),$showSql=false)
 	{
 		$query = new Entity\Query("select");
 
@@ -309,6 +348,7 @@ class DataManager {
 
 		$primaryField = static::getPrimaryField();
 		$query->setPrimaryKey($primaryField);
+		$setLimit= null;
 
 		foreach ($arParams as $field=>$values)
 		{
@@ -321,6 +361,9 @@ class DataManager {
 					$query->setFilter($values);
 					$query->setWhere();
 					break;
+				case 'filter_logic':
+					$query->setFilterLogic($values);
+					break;
 				case 'group':
 					$query->setGroup($values);
 					break;
@@ -328,6 +371,7 @@ class DataManager {
 					$query->setOrder($values);
 					break;
 				case 'limit':
+					$setLimit = $values;
 					$query->setLimit($values);
 					break;
 				case 'offset':
@@ -386,6 +430,13 @@ class DataManager {
 				{
 					$arResult['SQL'] = $res->getSql();
 				}
+				//TODO: Раскомментировать и отловить все ошибки. А то Кузя орет =(
+				/*
+				if (!is_null($setLimit) && intval($setLimit)==1)
+				{
+					$arResult = $arResult[0];
+				}
+				*/
 				return $arResult;
 			}
 			else
@@ -405,6 +456,28 @@ class DataManager {
 		}
 
 
+	}
+
+	public static function getOne ($arParams=array(),$showSql=false)
+	{
+		$arParams['limit'] = 1;
+		$arRes = static::getList($arParams,$showSql);
+		if ($showSql)
+		{
+			$sql = $arRes['SQL'];
+			unset($arRes['SQL']);
+			if (isset($arRes[0]))
+			{
+				$arRes = $arRes[0];
+			}
+			$arRes['SQL'] = $sql;
+		}
+		elseif ($arRes)
+		{
+			$arRes = $arRes[0];
+		}
+
+		return $arRes;
 	}
 
 	/**
@@ -467,6 +540,14 @@ class DataManager {
 		$res = $query->exec();
 		if ($res->getResult())
 		{
+			$additionalSql = static::getAdditionalCreateSql();
+			if (!is_null($additionalSql))
+			{
+				$query = new Entity\Query('create');
+				$query->setQueryBuildParts($additionalSql);
+				$query->exec();
+			}
+
 			static::OnAfterCreateTable();
 		}
 
@@ -485,7 +566,9 @@ class DataManager {
 		$prim = '';
 		if (!is_array($primary)) {
 			$arMap = static::getMap();
+			//msDebug($arMap);
 			foreach ($arMap as $field=>$array) {
+				//msDebug($array);
 				if (isset($array["primary"])) {
 					$prim = $field;
 				}

@@ -60,13 +60,11 @@ class File
 			return false;
 		}
 
-		$arRes = Tables\FileTable::getList(array(
-			'filter' => array('ID'=>$fileID)
-		));
-		if (count($arRes)==1 && isset($arRes[0]))
-		{
-			$arRes = $arRes[0];
-		}
+		$arRes = Tables\FileTable::getOne(
+			array(
+				'filter' => array('ID'=>$fileID)
+			)
+		);
 
 		return $arRes;
 	}

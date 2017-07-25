@@ -11,8 +11,9 @@
  */
 
 namespace MSergeev\Core\Lib;
+
 use MSergeev\Core\Entity\Query;
-use \MSergeev\Core\Tables;
+use MSergeev\Core\Tables;
 
 class Options
 {
@@ -62,8 +63,9 @@ class Options
 	 */
 	public static function getOptionInt($optionName) {
 		$optionName = strtoupper($optionName);
+		$optionVal = self::getOption($optionName);
 
-		if ($optionVal = self::getOption($optionName))
+		if ($optionVal!==false)
 		{
 			return intval($optionVal);
 		}
@@ -123,7 +125,7 @@ class Options
 				'NAME' => $optionName,
 				'VALUE' => $optionValue
 			);
-			$result = Tables\OptionsTable::getList(array(
+			$result = Tables\OptionsTable::getOne(array(
 				"filter" => array(
 					"NAME" => $optionName
 				)
@@ -133,7 +135,7 @@ class Options
 				$query = new Query('update');
 				$query->setUpdateParams(
 					$arInsert,
-					$result[0]['ID'],
+					$result['ID'],
 					Tables\OptionsTable::getTableName(),
 					Tables\OptionsTable::getMapArray()
 				);
@@ -191,15 +193,15 @@ class Options
 			return self::$arOptions[$optionName];
 		}
 		else {
-			$result = Tables\OptionsTable::getList(array(
+			$result = Tables\OptionsTable::getOne(array(
 				"filter" => array(
 					"NAME" => $optionName
 				)
 			));
-			if (!empty($result))
+			if ($result)
 			{
-				self::$arOptions[$optionName] = $result[0]['VALUE'];
-				return $result[0]['VALUE'];
+				self::$arOptions[$optionName] = $result['VALUE'];
+				return $result['VALUE'];
 			}
 			else
 			{

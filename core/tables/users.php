@@ -23,6 +23,15 @@ class UsersTable extends DataManager
 		return 'Пользователи';
 	}
 
+	public static function getTableLinks ()
+	{
+		return array(
+			'ID' => array(
+				'ms_core_users_properties' => 'USER_ID'
+			)
+		);
+	}
+
 	public static function getMap ()
 	{
 		return array(
@@ -30,6 +39,11 @@ class UsersTable extends DataManager
 				'primary' => true,
 				'autocomplete' => true,
 				'title' => 'ID пользователя'
+			)),
+			new Entity\BooleanField('ACTIVE',array(
+				'required' => true,
+				'default_value' => true,
+				'title' => 'Активность'
 			)),
 			new Entity\StringField('LOGIN',array(
 				'required' => true,
@@ -57,6 +71,9 @@ class UsersTable extends DataManager
 			)),
 			new Entity\StringField('FIO_O',array(
 				'title' => 'Отчество'
+			)),
+			new Entity\StringField('HASH',array(
+				'title' => 'Hash'
 			))
 		);
 	}

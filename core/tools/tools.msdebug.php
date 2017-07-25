@@ -726,8 +726,23 @@ function nf_pp_init( id, autoCollapsed, autoOpen ){
  * @copyright 2016 Mikhail Sergeev
  */
 
+
+function msDebugNoAdmin ()
+{
+	$options = func_get_args ();
+	$options[] = array ('autoCollapsed' => true);
+	$val = array_shift ($options); // trim first argument
+	// crazy thing to call constructor with variable arguments number
+	$reflection = new ReflectionClass('nf_pp');
+	$pp = $reflection->newInstanceArgs ($options);
+	$pp->pp ($val);
+	unset($pp, $reflection, $val, $options);
+}
+
 function msDebug ()
 {
+	global $USER;
+	if ($USER->getID() != 1) return;
 		$options = func_get_args ();
 		$options[] = array ('autoCollapsed' => true);
 		$val = array_shift ($options); // trim first argument
@@ -740,6 +755,8 @@ function msDebug ()
 
 function msDebugDie ()
 {
+	global $USER;
+	if ($USER->getID() != 1) return;
 		$options = func_get_args ();
 		$options[] = array ('autoCollapsed' => true);
 		$val = array_shift ($options); // trim first argument
@@ -752,11 +769,15 @@ function msDebugDie ()
 }
 
 function msDebugJs ($str) {
+	global $USER;
+	if ($USER->getID() != 1) return;
 		$arReturn['msDebugJs'] = $str;
 		echo json_encode($arReturn);
 }
 
 function msDebugJsDie ($str) {
+	global $USER;
+	if ($USER->getID() != 1) return;
 		$arReturn['msDebugJs'] = $str;
 		echo json_encode($arReturn);
 		die();
@@ -764,6 +785,8 @@ function msDebugJsDie ($str) {
 
 function msVarDump ($str)
 {
+	global $USER;
+	if ($USER->getID() != 1) return;
 	$backtrace = debug_backtrace ();
 	echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
 	echo "<b>".$backtrace[0]['file'].' '.$backtrace[0]['line'].':</b><br>';
@@ -773,6 +796,8 @@ function msVarDump ($str)
 
 function msEchoVar ($str)
 {
+	global $USER;
+	if ($USER->getID() != 1) return;
 	$backtrace = debug_backtrace ();
 	echo '<div style="border: 1px solid black; background-color: white; padding: 10px;">';
 	echo "<b>".$backtrace[0]['file'].' '.$backtrace[0]['line'].':</b><br>';

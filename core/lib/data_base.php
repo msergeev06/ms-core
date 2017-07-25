@@ -99,6 +99,19 @@ class DataBase {
 	}
 
 	/**
+	 * Выполняет произвольный SQL запрос
+	 *
+	 * @param $sql
+	 *
+	 * @return resource
+	 */
+	public function querySQL ($sql)
+	{
+		mysql_query($sql,$this->db_conn);
+		return mysql_affected_rows($this->db_conn);
+	}
+
+	/**
 	 * Возвращает время выполнения последнего SQL запроса
 	 *
 	 * @return float
@@ -128,8 +141,36 @@ class DataBase {
 		return intval($this->db_queries);
 	}
 
+	public function getCreateDbCommand ($dbName)
+	{
+		//mysqladmin -uUSER -pPASS create msergeev
+		$comm = 'sudo mysqladmin -u'
+			.$this->user.' -p'
+			.$this->pass.' create '
+			.$dbName;
+
+		return $comm;
+	}
+
+	public function getBackupCommand ($filePath)
+	{
+		//gunzip < /path/to/filename.sql.gz | mysql -uroot -prootpsw msergeev
+		$comm = 'sudo gunzip < '
+			.$filePath.' | mysql -u'
+			.$this->user.' -p'
+			.$this->pass.' '
+			.$this->base;
+
+		return $comm;
+	}
+
 	public function getDumpCommand ($path,$postfix=null,$package=null,$arTables=array(),$useGz=true,$pastDate=true,$noData=false,$dbName=null,$dbUser=null,$dbPass=null)
 	{
+		//mysqldump -u USER -pPASSWORD DATABASE | gzip > /path/to/outputfile.sql.gz
+		//mysqladmin -uUSER -pPASS create msergeev
+		//mysqladmin -uroot -prootpsw create msergeev
+		//gunzip < /var/www/kuzmahome/backup_db/dump_msergeev_hourly.20170703.160004.sql.gz | mysql -uroot -prootpsw msergeev
+
 		$comm = 'mysqldump ';
 		//$comm .= '-Q -c -e ';
 		if ($noData === true)

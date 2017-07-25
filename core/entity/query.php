@@ -449,7 +449,7 @@ class Query
 	 *
 	 * @param string $logic
 	 */
-	protected function setFilterLogic ($logic="AND")
+	public function setFilterLogic ($logic="AND")
 	{
 		if ($logic != "AND" && $logic != "OR") $logic="AND";
 		$this->filter_logic = $logic;
@@ -1362,13 +1362,17 @@ class Query
 						}
 						else
 						{
-							if (!is_array ($value))
+							if (!is_array ($value) && !is_null($value))
 							{
 								$fieldClassName = $arMap[$field]->getClassName ();
 								$value = $fieldClassName::saveDataModification ($value, $arMap[$field]);
 							}
 
-							if ($arMap[$field] instanceof IntegerField)
+							if (is_null($value))
+							{
+								$equating = ' IS NULL';
+							}
+							elseif ($arMap[$field] instanceof IntegerField)
 							{
 								if (isset($mask))
 								{
@@ -1545,7 +1549,14 @@ class Query
 										$sqlWhere .= "'".$value."'";
 									} else
 									{
-										$sqlWhere .= $value;
+										if (is_null($value))
+										{
+											$sqlWhere .= '';
+										}
+										else
+										{
+											$sqlWhere .= $value;
+										}
 									}
 								}
 								$bFirst = FALSE;
@@ -1564,7 +1575,14 @@ class Query
 										$sqlWhere .= "'".$value."'";
 									} else
 									{
-										$sqlWhere .= $value;
+										if (is_null($value))
+										{
+											$sqlWhere .= '';
+										}
+										else
+										{
+											$sqlWhere .= $value;
+										}
 									}
 								}
 							}
@@ -1707,18 +1725,42 @@ class Query
 		$helper = new Lib\SqlHelper();
 		$arOrder = $this->getOrder();
 		$tableName = $this->getTableName();
+		$arMap = $this->getTableMap();
 		if (!empty($arOrder)) {
 			$sqlOrder .= "ORDER BY\n\t";
 			$bFirst = true;
 			//msDebug($arOrder);
 			foreach ($arOrder as $sort=>$by)
 			{
+				$childTable = $tableName;
+				$childField = 'ID';
+				if (strpos($sort,'.'))
+				{
+					try
+					{
+						list($baseField,$childField) = explode('.',$sort);
+						if (isset($arMap[$baseField]))
+						{
+							list($childTable,$tmp) = explode('.',$arMap[$baseField]->getLink());
+							unset($tmp);
+						}
+						else
+						{
+							new Exception\ArgumentNullException('$arMap['.$baseField.']');
+						}
+					}
+					catch(Exception\ArgumentNullException $e)
+					{
+						$e->showException();
+						die();
+					}
+				}
 				if ($bFirst)
 				{
 					if (!strpos($sort,'.'))
 						$sqlOrder .= $helper->wrapQuotes($tableName).'.'.$helper->wrapQuotes($sort).' '.$by;
 					else
-						$sqlOrder .= $helper->wrapQuotes($sort).' '.$by;
+						$sqlOrder .= $helper->wrapQuotes($childTable).'.'.$helper->wrapQuotes($childField).' '.$by;
 					$bFirst = false;
 				}
 				else
@@ -1726,7 +1768,7 @@ class Query
 					if (!strpos($sort,'.'))
 						$sqlOrder .= ",\n\t".$helper->wrapQuotes($tableName).'.'.$helper->wrapQuotes($sort).' '.$by;
 					else
-						$sqlOrder .= ",\n\t".$helper->wrapQuotes($sort).' '.$by;
+						$sqlOrder .= ",\n\t".$helper->wrapQuotes($childTable).'.'.$helper->wrapQuotes($childField).' '.$by;
 
 				}
 			}
@@ -2276,7 +2318,8 @@ class Query
 			$sql .= "'".$primaryId."'";
 		}
 		$sql .= " LIMIT 1";
-
+		//msEchoVar($sql);
+		//msDebug($arTableLinks);
 		if (empty($arTableLinks))
 		{
 			return $sql;
@@ -2301,7 +2344,7 @@ class Query
 		}
 	}
 
-	//TODO: Протестировать
+	//TODO: Протестировать (немного потестил 19.06.17, связанные удалялись)
 	/**
 	 * Функция массового удаления записи и всех связанных с ней записей
 	 *
@@ -2315,14 +2358,36 @@ class Query
 		$tableName = $this->getTableName();
 		$massSql = '';
 
+		/*
+		 * Бежим по массиву вида
+		 * вариант 1:
+		 * array(
+		 *      'поле_в_таблице' => array(
+		 *          'другая_таблица' => 'ссылающееся_поле'
+		 *      )
+		 * )
+		 * или
+		 * вариант 2:
+		 * array(
+		 *      'поле_в_таблице' => array(
+		 *          'другая_таблица' => array('ссылающеся_поле_1','ссылающееся_поле_2',...)
+		 *      )
+		 * )
+		 */
 		foreach ($arTableLinks as $field=>$arLinked)
 		{
 			foreach ($arLinked as $linkTable=>$linkField)
 			{
+				//Если исходный массив вариант 2
 				if (is_array($linkField))
 				{
+					//для каждого 'ссылающееся_поле_n'
 					foreach ($linkField as $linkF)
 					{
+						//Используем Tools для вызова метода класса таблицы,
+						//определив класс таблицы по ее имени
+						//Используется getListFunc как обертка метода getList, для передачи произвольных параметров
+						//TODO: Посмотреть, можно ли отказаться от обертки
 						$arRes = Lib\Tools::runTableClassFunction ($linkTable,'getListFunc',array(
 							array(
 								'select' => array('ID'),
@@ -2331,26 +2396,34 @@ class Query
 								)
 							)
 						));
+						//Если в ссылающейся таблице есть записи с использованием 'поле_в_таблице', удаляем их
 						if ($arRes)
 						{
 							foreach ($arRes as $delID)
 							{
 								$deleteQuery = new Query('delete');
 								$deleteQuery->setDeleteParams(
-									$delID,
+									$delID['ID'],
 									true,
-									null,
-									Lib\Tools::runTableClassFunction ($linkTable,'getTableMap'),
+									$linkTable,
+									Lib\Tools::runTableClassFunction ($linkTable,'getMapArray'),
 									Lib\Tools::runTableClassFunction ($linkTable,'getTableLinks')
 								);
 								$deleteQuery->BuildQuery();
-								$massSql .= $deleteQuery->getQueryBuildParts().";\n";
+								if (strlen($deleteQuery->getQueryBuildParts())>5)
+								{
+									$massSql .= $deleteQuery->getQueryBuildParts().";\n";
+								}
 							}
 						}
 					}
 				}
 				else
 				{
+					//Используем Tools для вызова метода класса таблицы,
+					//определив класс таблицы по ее имени
+					//Используется getListFunc как обертка метода getList, для передачи произвольных параметров
+					//TODO: Посмотреть, можно ли отказаться от обертки
 					$arRes = Lib\Tools::runTableClassFunction ($linkTable,'getListFunc',array(
 						array(
 							'select' => array('ID'),
@@ -2359,25 +2432,30 @@ class Query
 							)
 						)
 					));
+					//Если в ссылающейся таблице есть записи с использованием 'поле_в_таблице', удаляем их
 					if ($arRes)
 					{
 						foreach ($arRes as $delID)
 						{
 							$deleteQuery = new Query('delete');
 							$deleteQuery->setDeleteParams(
-								$delID,
+								$delID['ID'],
 								true,
-								Lib\Tools::runTableClassFunction ($linkTable,'getTableName'),
-								Lib\Tools::runTableClassFunction ($linkTable,'getTableMap'),
+								$linkTable,
+								Lib\Tools::runTableClassFunction ($linkTable,'getMapArray'),
 								Lib\Tools::runTableClassFunction ($linkTable,'getTableLinks')
 							);
 							$deleteQuery->BuildQuery();
-							$massSql .= $deleteQuery->getQueryBuildParts().";\n";
+							if (strlen($deleteQuery->getQueryBuildParts())>5)
+							{
+								$massSql .= $deleteQuery->getQueryBuildParts().";\n";
+							}
 						}
 					}
 				}
 			}
 		}
+		//msEchoVar($massSql);
 
 		foreach ($arMap as $field=>$objData)
 		{
@@ -2388,6 +2466,8 @@ class Query
 				break;
 			}
 		}
+		//msDebug($primaryField);
+		//msDebug($primaryObj);
 
 		$sql = "DELETE FROM ".$helper->wrapQuotes($tableName);
 		$sql .= " WHERE ".$helper->wrapQuotes($tableName).".";
@@ -2400,9 +2480,10 @@ class Query
 		{
 			$sql .= "'".$primaryId."'";
 		}
-		$sql .= " LIMIT 1";
+		$sql .= " LIMIT 1;";
 
-		$massSql .= $sql.";";
+		//TODO: Случаются ошибки из-за лишних ; в запросе
+		$massSql .= $sql;
 		//msEchoVar($massSql);
 		$delQuery = new Query('delete');
 		$delQuery->setQueryBuildParts($massSql);

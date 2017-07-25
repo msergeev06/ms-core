@@ -89,4 +89,33 @@ class Plugins
 			Buffer::addCSS(Config::getConfig("CORE_ROOT")."plugins/magnific.popup/magnific-popup.css");
 		}
 	}
+
+	public static function includeCodeMirror ()
+	{
+		if (!isset(self::$arIncluded['codemirror']))
+		{
+			self::$arIncluded['codemirror'] = true;
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/lib/codemirror.js");
+			Buffer::addCSS(Config::getConfig("CORE_ROOT")."plugins/codemirror/lib/codemirror.css");
+			Buffer::addCSS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/display/fullscreen.css");
+			Buffer::addCSS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/fold/foldgutter.css");
+			Buffer::addCSS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/hint/show-hint.css");
+
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/edit/matchbrackets.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/mode/htmlmixed/htmlmixed.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/mode/xml/xml.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/mode/javascript/javascript.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/mode/css/css.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/mode/clike/clike.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/mode/php/php.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/mode/htmlmixed/htmlmixed.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/display/fullscreen.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/fold/foldcode.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/fold/foldgutter.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/fold/brace-fold.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/fold/comment-fold.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/hint/show-hint.js");
+			Buffer::addJS(Config::getConfig("CORE_ROOT")."plugins/codemirror/addon/edit/closebrackets.js");
+		}
+	}
 }

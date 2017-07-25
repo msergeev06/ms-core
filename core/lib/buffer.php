@@ -204,7 +204,11 @@ class Buffer {
 
 	public static function setRefresh ($url='', $time=0)
 	{
-		self::$refreshUrl = '//'.$_SERVER['HTTP_HOST'].Tools::getSitePath($url);
+		$url = Tools::getSitePath($url);
+		$url = str_replace(Config::getConfig('HTTP_HTTPS'),'',$url);
+		$url = str_replace('://','',$url);
+		$url = str_replace($_SERVER['HTTP_HOST'],'',$url);
+		self::$refreshUrl = '//'.$_SERVER['HTTP_HOST'].$url;
 		self::$refreshTime = intval($time);
 	}
 

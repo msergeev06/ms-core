@@ -251,12 +251,16 @@ abstract class Field {
 	 *
 	 * @api
 	 *
-	 * @param string $value Сериализованный массиы
+	 * @param string $value Сериализованный массив
 	 *
 	 * @return array
 	 */
 	public function unserialize($value)
 	{
+		if (is_array($value))
+		{
+			return $value;
+		}
 		return unserialize($value);
 	}
 

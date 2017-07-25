@@ -8,7 +8,6 @@ class Events
 {
 	private static $arEvents = array();
 	private static $arEventsPackages = array();
-	private static $arEventsPackagesSorted = array();
 	private static $bGetEventHandlersFromDB = false;
 
 	/**
@@ -28,11 +27,18 @@ class Events
 	 */
 	public static function addEventHandler($fromPackage, $eventID, $callback, $sort=100, $fullPath=false)
 	{
-		self::$arEvents[$fromPackage][$eventID][$sort][] = array(
+		$arHash = array(
+			'FROM_PACKAGE' => $fromPackage,
+			'EVENT_ID' => $eventID,
+			'SORT' => $sort,
 			'CALLBACK' => $callback,
 			'FULL_PATH' => $fullPath
 		);
-		ksort(self::$arEvents[$fromPackage][$eventID]);
+		$hash = md5(serialize($arHash));
+		self::$arEvents[$fromPackage][$eventID][$sort][$hash] = array(
+			'CALLBACK' => $callback,
+			'FULL_PATH' => $fullPath
+		);
 	}
 
 	/**
@@ -186,24 +192,37 @@ class Events
 		}
 
 		$arReturn = array();
-		if (isset(self::$arEventsPackagesSorted[$fromPackage][$eventID]))
+		if (isset(self::$arEventsPackages[$fromPackage][$eventID]))
 		{
-			$arReturn = self::$arEventsPackagesSorted[$fromPackage][$eventID];
+			$arReturn = self::$arEventsPackages[$fromPackage][$eventID];
 		}
 
 		if (isset(self::$arEvents[$fromPackage][$eventID]))
 		{
 			foreach (self::$arEvents[$fromPackage][$eventID] as $sort=>$events)
 			{
-				foreach ($events as $event)
+				foreach ($events as $hash=>$event)
 				{
-					$arReturn[$sort][] = $event;
+					$arReturn[$sort][$hash] = $event;
 				}
 			}
 		}
 
+
 		if (!empty($arReturn))
 		{
+			$arTmp = $arReturn;
+			$arReturn = array();
+			foreach ($arTmp as $sort=>$arEvents)
+			{
+				foreach ($arEvents as $hash=>$event)
+				{
+					$arReturn[$sort][] = $event;
+				}
+			}
+
+			krsort($arReturn);
+
 			return $arReturn;
 		}
 		else
@@ -271,6 +290,37 @@ class Events
 	}
 
 	/**
+	 * Функция получает список зарегистрированных обработчиков события и запускает их
+	 *
+	 * @see MSergeev\Core\Lib\Events::getPackageEvents
+	 * @see MSergeev\Core\Lib\Events::executePackageEvent
+	 *
+	 * @param string $fromPackage   Идентификатор пакета который инициирует событие
+	 * @param string $eventID       Идентификатор события
+	 * @param array  $arParams      Параметры события
+	 * @param bool   $fromDB        Флаг принудительной загрузки обработчиков событий из DB
+	 *
+	 * @return bool
+	 */
+	public static function runEvents ($fromPackage,$eventID,$arParams=array(),$fromDB=false)
+	{
+		if ($arEvents = static::getPackageEvents($fromPackage,$eventID, $fromDB))
+		{
+			foreach ($arEvents as $sort=>$ar_events)
+			{
+				foreach ($ar_events as $arEvent)
+				{
+					$bStop = static::executePackageEvent($arEvent,$arParams);
+					if ($bStop===false)
+						return $bStop;
+				}
+			}
+		}
+
+		return true;
+	}
+
+	/**
 	 * Получает информацию о зарегистрированных обработчиках событий из DB
 	 *
 	 * @param null|string $fromPackage Идентификатор инициализирующего пакета
@@ -300,25 +350,19 @@ class Events
 		{
 			foreach ($arRes as $arHandler)
 			{
+				unset($arHandler['ID']);
+				$hash = md5(serialize($arHandler));
 				$fromPack = $arHandler['FROM_PACKAGE'];
 				unset($arHandler['FROM_PACKAGE']);
 				$eventID = $arHandler['EVENT_ID'];
 				unset($arHandler['EVENT_ID']);
-				$id = $arHandler['ID'];
-				unset($arHandler['ID']);
+				$sort = $arHandler['SORT'];
+				unset($arHandler['SORT']);
 
-				self::$arEventsPackages[$fromPack][$eventID][$id] = $arHandler;
-
-				foreach (self::$arEventsPackages[$fromPack][$eventID] as $id=>$handler)
-				{
-					$sort = $handler['SORT'];
-					unset($handler['SORT']);
-					self::$arEventsPackagesSorted[$fromPack][$eventID][$sort][] = $handler;
-				}
-
-				ksort(self::$arEventsPackagesSorted[$fromPack][$eventID]);
+				self::$arEventsPackages[$fromPack][$eventID][$sort][$hash] = $arHandler;
 			}
 		}
+		//msDebug(self::$arEventsPackages);
 	}
 
 }

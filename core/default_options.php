@@ -8,5 +8,6 @@
 
 $arDefaultOptions = array(
 	"db_ms_preffix" => "ms_",
-	"db_core_preffix" => "ms_core_"
+	"db_core_preffix" => "ms_core_",
+	'session_life_time' => (5*60)
 );

@@ -7,6 +7,7 @@
  */
 
 use \MSergeev\Core\Lib;
+use MSergeev\Core\Entity;
 
 __include_once(Lib\Config::getConfig('CORE_ROOT')."lib/data_base.php");
 $DB = new Lib\DataBase();
@@ -17,10 +18,6 @@ Lib\Options::init();
 
 __include_once(Lib\Config::getConfig('CORE_ROOT')."lib/loader.php");
 Lib\Loader::init();
-
-__include_once(Lib\Config::getConfig('CORE_ROOT')."lib/users.php");
-$USER = new Lib\Users();
-$GLOBALS['USER'] = $USER;
 
 //***** Exception ********
 Lib\Loader::includeFiles(
@@ -37,15 +34,14 @@ Lib\Loader::includeFiles(
 //***** Lib *********
 Lib\Loader::includeFiles(
 	Lib\Config::getConfig('CORE_ROOT')."lib/",
-	array(
+	array( // Сначала загружаем эти в этом порядке
 		"sql_helper.php"
 	),
 	array( // Не загружаем, так как были загружены ранее
 		"data_base.php",
 		"options.php",
 		"config.php",
-		"loader.php",
-		"users.php"
+		"loader.php"
 	)
 );
 
@@ -60,11 +56,19 @@ Lib\Loader::includeFiles(
 		"scalar_field.php",
 		"date_field.php",
 		"string_field.php"
+	),
+	array( //Не загружаем, так как были загружены ранее
+		"user.php"
 	)
 );
 
 //***** Tables ********
 Lib\Loader::includeFiles(Lib\Config::getConfig('CORE_ROOT')."tables/");
+
+__include_once(Lib\Config::getConfig('CORE_ROOT')."entity/user.php");
+$USER = new Entity\User();
+$GLOBALS['USER'] = $USER;
+
 
 //Проверяем используется ли сборка на MajorDoMo. Если да и пакет Majordomo установлен, подключаем его
 if (Lib\Config::getConfig('USE_MAJORDOMO') && Lib\Loader::issetPackage('majordomo'))
@@ -89,3 +93,4 @@ if (Lib\Config::getConfig('USE_KUZMAHOME') && Lib\Loader::issetPackage('kuzmahom
 		\MSergeev\Packages\KuzmaHome\Lib\Http::checkAutorize();
 	}
 }
+
